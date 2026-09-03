@@ -62,6 +62,27 @@ class GovernanceEngine:
             return GovernanceDecision(GovernanceOutcome.ALLOW, "core.lifecycle.capability", "0.1", f"{capability.value} is permitted while relationship is {state.lifecycle.value}.")
         return GovernanceDecision(GovernanceOutcome.BLOCK, "core.lifecycle.capability", "0.1", f"{capability.value} is blocked while relationship is {state.lifecycle.value}.")
 
+    def require_lifecycle_authority(self, state: RelationalState, actor: str) -> GovernanceDecision:
+        record = state.lifecycle_authorities.get(actor)
+        if record and record.active:
+            return GovernanceDecision(GovernanceOutcome.ALLOW, "core.lifecycle.authority", "0.1", f"{actor!r} has active lifecycle authority for this relationship.")
+        return GovernanceDecision(GovernanceOutcome.BLOCK, "core.lifecycle.authority", "0.1", f"{actor!r} lacks active lifecycle authority for this relationship.")
+
+    def require_lifecycle_transition(self, state: RelationalState, to: LifecycleState) -> GovernanceDecision:
+        allowed: dict[LifecycleState, frozenset[LifecycleState]] = {
+            LifecycleState.FORMING: frozenset({LifecycleState.ACTIVE, LifecycleState.DISSOLVING}),
+            LifecycleState.ACTIVE: frozenset({LifecycleState.RESTING, LifecycleState.RENEWING, LifecycleState.TRANSFORMING, LifecycleState.DISSOLVING}),
+            LifecycleState.RESTING: frozenset({LifecycleState.ACTIVE, LifecycleState.DORMANT, LifecycleState.DISSOLVING}),
+            LifecycleState.DORMANT: frozenset({LifecycleState.RENEWING, LifecycleState.DISSOLVING}),
+            LifecycleState.RENEWING: frozenset({LifecycleState.ACTIVE, LifecycleState.TRANSFORMING, LifecycleState.DISSOLVING}),
+            LifecycleState.TRANSFORMING: frozenset({LifecycleState.ACTIVE, LifecycleState.RESTING, LifecycleState.DISSOLVING}),
+            LifecycleState.DISSOLVING: frozenset({LifecycleState.ACTIVE, LifecycleState.DISSOLVED}),
+            LifecycleState.DISSOLVED: frozenset(),
+        }
+        if to in allowed[state.lifecycle]:
+            return GovernanceDecision(GovernanceOutcome.ALLOW, "core.lifecycle.transition", "0.1", f"Lifecycle transition {state.lifecycle.value} -> {to.value} is permitted.")
+        return GovernanceDecision(GovernanceOutcome.BLOCK, "core.lifecycle.transition", "0.1", f"Lifecycle transition {state.lifecycle.value} -> {to.value} is not permitted.")
+
     def require_runtime_execution(self, state: RelationalState) -> GovernanceDecision:
         if state.lifecycle in {LifecycleState.FORMING, LifecycleState.ACTIVE, LifecycleState.RENEWING, LifecycleState.TRANSFORMING}:
             return GovernanceDecision(GovernanceOutcome.ALLOW, "core.lifecycle.runtime", "0.1", f"Runtime execution is permitted while relationship is {state.lifecycle.value}.")
