@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from uuid import uuid4
 
-from .events import EventProposal, RelationalEvent
+from .events import EventProposal, RelationalEvent, verify_event_chain
 from .governance import GovernanceEngine
 from .state import RelationalState, reduce_events
 from .store import EventStore, InMemoryEventStore
@@ -73,7 +73,15 @@ class Relationship:
 
     def audit(self) -> dict:
         events = self.events
-        return {"relationship_id": self.relationship_id, "event_count": len(events), "hashes_valid": all(e.verify_hash() for e in events), "last_event_id": events[-1].event_id if events else None, "reconstructable": self.state.last_event_id == (events[-1].event_id if events else None)}
+        last_event_id = events[-1].event_id if events else None
+        return {
+            "relationship_id": self.relationship_id,
+            "event_count": len(events),
+            "hashes_valid": all(e.verify_hash() for e in events),
+            "chain_valid": verify_event_chain(events),
+            "last_event_id": last_event_id,
+            "reconstructable": self.state.last_event_id == last_event_id,
+        }
 
 
 class Tria:
