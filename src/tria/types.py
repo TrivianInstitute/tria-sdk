@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import StrEnum
 from typing import Any
+
+from .immutability import deep_freeze
 
 
 def utcnow() -> datetime:
@@ -144,4 +147,7 @@ class GovernanceDecision:
     policy_version: str
     reason: str
     evaluated_at: datetime = field(default_factory=utcnow)
-    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "metadata", deep_freeze(self.metadata))

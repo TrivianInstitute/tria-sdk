@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 
+from ..immutability import deep_freeze
 from ..runtime import InvocationPlan, InvocationResult
 
 
@@ -14,8 +16,12 @@ class ProviderTranslationError(ValueError):
 class ProviderRequest:
     provider: str
     request_id: str
-    payload: dict[str, Any]
-    metadata: dict[str, Any] = field(default_factory=dict)
+    payload: Mapping[str, Any]
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "payload", deep_freeze(self.payload))
+        object.__setattr__(self, "metadata", deep_freeze(self.metadata))
 
 
 @dataclass(frozen=True, slots=True)
@@ -24,7 +30,10 @@ class ProviderResponse:
     request_id: str
     status: str
     output_ref: str | None = None
-    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "metadata", deep_freeze(self.metadata))
 
     def to_invocation_result(self) -> InvocationResult:
         return InvocationResult(
@@ -32,7 +41,7 @@ class ProviderResponse:
             produced_by=self.provider,
             status=self.status,
             output_ref=self.output_ref,
-            metadata=dict(self.metadata),
+            metadata=self.metadata,
         )
 
 

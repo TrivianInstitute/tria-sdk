@@ -1,0 +1,11 @@
+{
+  "fixture": "deep_immutability",
+  "version": "0.1",
+  "requirements": [
+    "Committed relational event payloads are immutable snapshots of caller-supplied data.",
+    "Runtime request and result metadata cannot be mutated through nested containers after construction.",
+    "Provider request payloads and metadata cannot be mutated through nested containers after construction.",
+    "Governance decision metadata cannot be mutated through nested containers after construction.",
+    "Deep immutability hardening does not change event hash semantics or compatibility versions."
+  ]
+}
