@@ -5,7 +5,6 @@ from typing import Any
 from uuid import uuid4
 
 from .core import Relationship
-from .governance import GovernanceEngine
 from .types import Capability, GovernanceDecision, GovernanceOutcome
 
 
@@ -71,11 +70,19 @@ class InvocationResult:
 class Runtime:
     """Model-agnostic boundary between governed relationship state and execution."""
 
+    @staticmethod
+    def _resolution_status(outcome: GovernanceOutcome) -> str:
+        if outcome is GovernanceOutcome.PAUSE:
+            return "PAUSED"
+        return "BLOCKED"
+
     def prepare(self, relationship: Relationship, request: InvocationRequest) -> InvocationPlan:
         relationship.record_invocation_proposed(request)
         decisions: list[GovernanceDecision] = []
 
-        lifecycle_decision = GovernanceEngine().require_runtime_execution(relationship.state)
+        # Runtime must use the governance engine attached to the relationship.
+        # Creating a new engine here would bypass caller-supplied governance behavior.
+        lifecycle_decision = relationship._governance.require_runtime_execution(relationship.state)
         decisions.append(lifecycle_decision)
         relationship.record_governance_decision(
             lifecycle_decision,
@@ -85,7 +92,12 @@ class Runtime:
             check="lifecycle",
         )
         if lifecycle_decision.outcome is not GovernanceOutcome.ALLOW:
-            relationship.record_invocation_resolution(request.requested_by, request.request_id, "BLOCKED", reason=lifecycle_decision.reason)
+            relationship.record_invocation_resolution(
+                request.requested_by,
+                request.request_id,
+                self._resolution_status(lifecycle_decision.outcome),
+                reason=lifecycle_decision.reason,
+            )
             return InvocationPlan(request=request, outcome=lifecycle_decision.outcome, decisions=tuple(decisions), reason=lifecycle_decision.reason)
 
         for requirement in request.consent_requirements:
