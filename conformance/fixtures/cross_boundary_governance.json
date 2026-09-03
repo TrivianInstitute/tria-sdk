@@ -1,0 +1,18 @@
+{
+  "fixture_version": "0.1",
+  "name": "cross-boundary-governance",
+  "description": "A conforming implementation governs source disclosure, destination admission, and downstream derivation as distinct capabilities while preserving source provenance.",
+  "expect": {
+    "read_does_not_authorize_disclosure": true,
+    "source_disclose_capability_required": true,
+    "destination_store_capability_required": true,
+    "admission_is_explicit": true,
+    "admission_does_not_grant_derivation": true,
+    "destination_derive_capability_required": true,
+    "source_event_identity_preserved": true,
+    "source_event_hash_preserved": true,
+    "wrong_destination_fails_closed": true,
+    "tampered_disclosure_handle_fails_closed": true,
+    "raw_content_not_required_in_core": true
+  }
+}
