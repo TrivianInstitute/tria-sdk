@@ -1,0 +1,28 @@
+{
+  "fixture_version": "0.1",
+  "name": "runtime-boundary",
+  "description": "A conforming runtime must expose only explicitly requested, authorized context and must fail closed before execution when required capabilities are absent.",
+  "participants": ["human:a", "agent:b"],
+  "resource": "claim:<claim_id>",
+  "cases": [
+    {
+      "name": "read-denied",
+      "permissions": [],
+      "context_resources": ["claim:<claim_id>"],
+      "expect": {"allowed": false, "context_count": 0}
+    },
+    {
+      "name": "read-allowed",
+      "permissions": [{"capability": "READ", "grantee": "agent:b"}],
+      "context_resources": ["claim:<claim_id>"],
+      "expect": {"allowed": true, "context_count": 1}
+    },
+    {
+      "name": "derive-not-implied-by-read",
+      "permissions": [{"capability": "READ", "grantee": "agent:b"}],
+      "requirements": [{"capability": "DERIVE", "resource": "claim:<claim_id>"}],
+      "context_resources": ["claim:<claim_id>"],
+      "expect": {"allowed": false, "context_count": 0}
+    }
+  ]
+}
