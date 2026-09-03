@@ -27,11 +27,11 @@
     "unsupported_event_schema_fails_closed"
   ],
   "fixtures": [
-    "fixtures/replay.json",
-    "fixtures/governed_access.json",
-    "fixtures/runtime_boundary.json",
+    "fixtures/persistence_replay.json",
+    "fixtures/governed_access_v0.1.json",
+    "fixtures/runtime-boundary.json",
     "fixtures/provider_boundary.json",
-    "fixtures/execution_bridge.json",
+    "fixtures/execution-bridge.v0.1.json",
     "fixtures/delegation_races_v0.1.json",
     "fixtures/consent_metadata_boundary.json",
     "fixtures/lifecycle_enforcement.json",
