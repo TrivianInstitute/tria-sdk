@@ -13,12 +13,14 @@ from .types import Capability, GovernanceDecision, GovernanceOutcome
 class CapabilityRequirement:
     resource: str
     capability: Capability
+    purpose: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
 class ConsentRequirement:
     actor: str
     scope: str
+    purpose: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,21 +76,11 @@ class Runtime:
         lifecycle_decision = GovernanceEngine().require_runtime_execution(relationship.state)
         decisions.append(lifecycle_decision)
         if lifecycle_decision.outcome is not GovernanceOutcome.ALLOW:
-            relationship.record_invocation_resolution(
-                request.requested_by,
-                request.request_id,
-                "BLOCKED",
-                reason=lifecycle_decision.reason,
-            )
-            return InvocationPlan(
-                request=request,
-                outcome=lifecycle_decision.outcome,
-                decisions=tuple(decisions),
-                reason=lifecycle_decision.reason,
-            )
+            relationship.record_invocation_resolution(request.requested_by, request.request_id, "BLOCKED", reason=lifecycle_decision.reason)
+            return InvocationPlan(request=request, outcome=lifecycle_decision.outcome, decisions=tuple(decisions), reason=lifecycle_decision.reason)
 
         for requirement in request.consent_requirements:
-            decision = relationship.require_consent(requirement.actor, requirement.scope)
+            decision = relationship.require_consent(requirement.actor, requirement.scope, purpose=requirement.purpose)
             decisions.append(decision)
             if decision.outcome is not GovernanceOutcome.ALLOW:
                 relationship.record_invocation_resolution(request.requested_by, request.request_id, "BLOCKED", reason=decision.reason)
@@ -97,30 +89,19 @@ class Runtime:
         requirements = list(request.requirements)
         for resource in request.context_resources:
             read_requirement = CapabilityRequirement(resource, Capability.READ)
-            if read_requirement not in requirements:
+            if not any(item.resource == resource and item.capability is Capability.READ for item in requirements):
                 requirements.append(read_requirement)
 
         for requirement in requirements:
-            decision = relationship.check_capability(request.requested_by, requirement.resource, requirement.capability)
+            decision = relationship.check_capability(request.requested_by, requirement.resource, requirement.capability, purpose=requirement.purpose)
             decisions.append(decision)
             if decision.outcome is not GovernanceOutcome.ALLOW:
                 relationship.record_invocation_resolution(request.requested_by, request.request_id, "BLOCKED", reason=decision.reason)
                 return InvocationPlan(request=request, outcome=decision.outcome, decisions=tuple(decisions), reason=decision.reason)
 
         context = tuple(self._resolve_context(relationship, resource) for resource in request.context_resources)
-        relationship.record_invocation_resolution(
-            request.requested_by,
-            request.request_id,
-            "AUTHORIZED",
-            reason="Lifecycle, consent, and capability requirements are active.",
-        )
-        return InvocationPlan(
-            request=request,
-            outcome=GovernanceOutcome.ALLOW,
-            decisions=tuple(decisions),
-            context=context,
-            reason="Lifecycle, consent, and capability requirements are active.",
-        )
+        relationship.record_invocation_resolution(request.requested_by, request.request_id, "AUTHORIZED", reason="Lifecycle, consent, capability, and purpose requirements are active.")
+        return InvocationPlan(request=request, outcome=GovernanceOutcome.ALLOW, decisions=tuple(decisions), context=context, reason="Lifecycle, consent, capability, and purpose requirements are active.")
 
     def record_result(self, relationship: Relationship, result: InvocationResult) -> None:
         relationship.record_invocation_result(result)
@@ -132,10 +113,5 @@ class Runtime:
             claim = relationship.state.claims.get(claim_id)
             if claim is None:
                 raise KeyError(f"Unknown context resource: {resource}")
-            return ContextItem(
-                resource=resource,
-                value=claim.content,
-                epistemic_type=claim.epistemic_type.value,
-                provenance=claim.derived_from or claim.source_refs,
-            )
+            return ContextItem(resource=resource, value=claim.content, epistemic_type=claim.epistemic_type.value, provenance=claim.derived_from or claim.source_refs)
         return ContextItem(resource=resource, value=None)
