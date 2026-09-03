@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trivianinstitute.org/schemas/tria/relational_event.schema.json",
+  "title": "TRIA Relational Event",
+  "type": "object",
+  "required": ["event_id", "relationship_id", "event_type", "actor_id", "actor_sequence", "payload", "schema_version", "event_hash"],
+  "properties": {
+    "event_id": {"type": "string", "minLength": 1},
+    "relationship_id": {"type": "string", "minLength": 1},
+    "event_type": {"type": "string", "minLength": 1},
+    "actor_id": {"type": "string", "minLength": 1},
+    "actor_sequence": {"type": "integer", "minimum": 1},
+    "causal_parents": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "observed_at": {"type": ["string", "null"], "format": "date-time"},
+    "committed_at": {"type": "string", "format": "date-time"},
+    "payload": {"type": "object"},
+    "schema_version": {"type": "string"},
+    "policy_version": {"type": ["string", "null"]},
+    "previous_event_hash": {"type": ["string", "null"]},
+    "event_hash": {"type": "string", "minLength": 1}
+  },
+  "additionalProperties": false
+}
