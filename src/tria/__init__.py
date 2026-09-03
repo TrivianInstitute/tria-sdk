@@ -1,5 +1,6 @@
 from .core import ClaimHandle, EpistemicAdmissionError, Relationship, Tria
 from .events import EventProposal, RelationalEvent, verify_event_chain
+from .execution import ExecutionBridge, ExecutionReceipt, Executor
 from .governance import GovernanceEngine, Policy, PolicyAdoption
 from .providers import (
     AnthropicMessagesAdapter,
@@ -38,6 +39,9 @@ __all__ = [
     "EpistemicType",
     "EventProposal",
     "EventStore",
+    "ExecutionBridge",
+    "ExecutionReceipt",
+    "Executor",
     "GovernanceDecision",
     "GovernanceEngine",
     "GovernanceOutcome",
