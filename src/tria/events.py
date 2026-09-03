@@ -7,6 +7,8 @@ import json
 from typing import Any, Iterable
 from uuid import uuid4
 
+from .compat import CURRENT_EVENT_SCHEMA_VERSION, require_supported_event_schema
+
 
 def _canonical_json(data: dict[str, Any]) -> str:
     return json.dumps(data, sort_keys=True, separators=(",", ":"), default=str)
@@ -27,7 +29,7 @@ class EventProposal:
     actor_sequence: int
     causal_parents: tuple[str, ...] = ()
     observed_at: datetime | None = None
-    schema_version: str = "0.1"
+    schema_version: str = CURRENT_EVENT_SCHEMA_VERSION
     policy_version: str = "0.1"
 
 
@@ -49,6 +51,7 @@ class RelationalEvent:
 
     @classmethod
     def commit(cls, proposal: EventProposal, previous_event_hash: str | None) -> "RelationalEvent":
+        require_supported_event_schema(proposal.schema_version)
         event_id = str(uuid4())
         committed_at = datetime.now(timezone.utc)
         material = {
@@ -83,6 +86,8 @@ class RelationalEvent:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "RelationalEvent":
+        schema_version = data.get("schema_version", CURRENT_EVENT_SCHEMA_VERSION)
+        require_supported_event_schema(schema_version)
         return cls(
             event_id=data["event_id"],
             relationship_id=data["relationship_id"],
@@ -93,7 +98,7 @@ class RelationalEvent:
             observed_at=_parse_datetime(data.get("observed_at")),
             committed_at=_parse_datetime(data["committed_at"]),
             payload=dict(data.get("payload", {})),
-            schema_version=data.get("schema_version", "0.1"),
+            schema_version=schema_version,
             policy_version=data.get("policy_version", "0.1"),
             previous_event_hash=data.get("previous_event_hash"),
             event_hash=data["event_hash"],
