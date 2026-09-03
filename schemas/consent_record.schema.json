@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trivianinstitute.org/tria/schemas/consent_record.schema.json",
+  "title": "TRIA Consent Record",
+  "type": "object",
+  "required": ["actor", "scope", "policy_version", "active"],
+  "properties": {
+    "actor": {"type": "string", "minLength": 1},
+    "scope": {"type": "string", "minLength": 1},
+    "purpose": {"type": ["string", "null"]},
+    "capability": {"type": ["string", "null"], "enum": ["STORE", "READ", "DISCLOSE", "DERIVE", "ACT", "DELEGATE", null]},
+    "granted_at": {"type": ["string", "null"], "format": "date-time"},
+    "expires_at": {"type": ["string", "null"], "format": "date-time"},
+    "conditions": {"type": "array", "items": {"type": "string"}},
+    "policy_version": {"type": "string", "minLength": 1},
+    "active": {"type": "boolean"}
+  },
+  "additionalProperties": false
+}
