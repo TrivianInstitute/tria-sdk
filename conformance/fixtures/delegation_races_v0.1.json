@@ -1,0 +1,17 @@
+{
+  "fixture_version": "0.1",
+  "name": "delegation-and-causal-races",
+  "requirements": [
+    "Delegating a capability requires active DELEGATE authority for the same resource.",
+    "Policy authority may only be delegated by tria:system bootstrap or an actor with active authority for the same scope.",
+    "Same-actor sequence establishes permission ordering.",
+    "Cross-actor grant/revoke conflicts without causal ordering fail closed.",
+    "Explicit causal parents may resolve cross-actor permission ordering."
+  ],
+  "expected": {
+    "delegate_without_authority": "ERROR",
+    "delegate_with_authority": "ALLOW",
+    "ambiguous_cross_actor_race": "BLOCK",
+    "causally_ordered_cross_actor_race": "ALLOW"
+  }
+}
