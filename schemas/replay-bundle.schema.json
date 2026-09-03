@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trivian.org/schemas/tria/replay-bundle.schema.json",
+  "title": "TRIA Replay Bundle",
+  "type": "object",
+  "required": [
+    "format_version",
+    "relationship_id",
+    "event_schema_version",
+    "projection_version",
+    "events",
+    "projection",
+    "projection_sha256"
+  ],
+  "properties": {
+    "format_version": {"type": "string"},
+    "relationship_id": {"type": "string", "minLength": 1},
+    "event_schema_version": {"type": "string"},
+    "projection_version": {"type": "string"},
+    "events": {
+      "type": "array",
+      "items": {"$ref": "event.schema.json"}
+    },
+    "projection": {"type": "object"},
+    "projection_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  },
+  "additionalProperties": false
+}

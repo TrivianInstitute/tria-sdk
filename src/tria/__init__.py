@@ -10,6 +10,15 @@ from .core import ClaimHandle, DelegationError, EpistemicAdmissionError, PolicyA
 from .events import EventProposal, RelationalEvent, verify_event_chain
 from .execution import ExecutionBridge, ExecutionReceipt, Executor
 from .governance import GovernanceEngine, Policy, PolicyAdoption
+from .portable import (
+    BUNDLE_FORMAT_VERSION,
+    BundleVerification,
+    ReplayBundle,
+    export_replay_bundle,
+    projection_digest,
+    state_to_dict,
+    verify_replay_bundle,
+)
 from .providers import (
     AnthropicMessagesAdapter,
     OpenAIResponsesAdapter,
@@ -39,13 +48,15 @@ from .types import (
 from .version import __version__
 
 __all__ = [
-    "AnthropicMessagesAdapter", "Capability", "CapabilityRequirement", "Claim", "ClaimHandle", "ClaimStatus",
-    "CompatibilityReport", "ConsentRecord", "ConsentRequirement", "ContextItem", "CURRENT_EVENT_SCHEMA_VERSION", "CURRENT_PROJECTION_VERSION",
-    "DelegationError", "EpistemicAdmissionError", "EpistemicType", "EventProposal", "EventStore", "ExecutionBridge", "ExecutionReceipt",
-    "Executor", "GovernanceDecision", "GovernanceEngine", "GovernanceOutcome", "InMemoryEventStore", "InvocationPlan",
+    "AnthropicMessagesAdapter", "BUNDLE_FORMAT_VERSION", "BundleVerification", "Capability", "CapabilityRequirement",
+    "Claim", "ClaimHandle", "ClaimStatus", "CompatibilityReport", "ConsentRecord", "ConsentRequirement", "ContextItem",
+    "CURRENT_EVENT_SCHEMA_VERSION", "CURRENT_PROJECTION_VERSION", "DelegationError", "EpistemicAdmissionError",
+    "EpistemicType", "EventProposal", "EventStore", "ExecutionBridge", "ExecutionReceipt", "Executor",
+    "GovernanceDecision", "GovernanceEngine", "GovernanceOutcome", "InMemoryEventStore", "InvocationPlan",
     "InvocationRequest", "InvocationResult", "LifecycleState", "OpenAIResponsesAdapter", "PermissionRecord", "Policy",
     "PolicyAdoption", "PolicyAdoptionRecord", "PolicyAuthorityError", "PolicyAuthorityRecord", "PolicyDefinitionRecord",
     "ProviderAdapter", "ProviderRequest", "ProviderResponse", "ProviderTranslationError", "ReconsentRequirement",
-    "RelationalEvent", "RelationalState", "Relationship", "Runtime", "SQLiteEventStore", "SchemaCompatibilityError",
-    "Tria", "__version__", "check_event_schema", "require_supported_event_schema", "verify_event_chain",
+    "RelationalEvent", "RelationalState", "Relationship", "ReplayBundle", "Runtime", "SQLiteEventStore",
+    "SchemaCompatibilityError", "Tria", "__version__", "check_event_schema", "export_replay_bundle", "projection_digest",
+    "require_supported_event_schema", "state_to_dict", "verify_event_chain", "verify_replay_bundle",
 ]
