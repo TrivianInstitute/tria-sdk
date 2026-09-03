@@ -116,3 +116,10 @@ def test_dissolved_is_terminal():
     with pytest.raises(LifecycleTransitionError):
         rel.transition("human:a", LifecycleState.ACTIVE)
     assert rel.state.lifecycle is LifecycleState.DISSOLVED
+
+
+def test_consent_does_not_change_lifecycle():
+    rel = _relationship()
+    rel.grant_consent("human:a", "persistent_context")
+    assert rel.state.lifecycle is LifecycleState.FORMING
+    assert rel.require_consent("human:a", "persistent_context").outcome is GovernanceOutcome.ALLOW
