@@ -1,5 +1,6 @@
 {
   "tria_core_spec": "0.1.1",
+  "bundle_format_version": "0.1",
   "event_schema_version": "0.1",
   "projection_version": "0.2",
   "required_semantics": [
@@ -8,6 +9,8 @@
     "hash_chain_verification",
     "portable_replay_bundle_verification",
     "integrity_gated_replay_import",
+    "bundle_event_projection_versions_fail_closed",
+    "bundle_event_schema_envelope_matches_contents",
     "scoped_consent",
     "capability_separation",
     "consent_permission_intersection",
