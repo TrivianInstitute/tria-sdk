@@ -32,6 +32,8 @@ The current alpha implements:
 - model-agnostic invocation planning and governed context filtering;
 - thin OpenAI Responses-style and Anthropic Messages-style request translators;
 - caller-owned execution through `ExecutionBridge`;
+- portable replay bundles with integrity-gated restore;
+- explicit compatibility gates for bundle format, event schema, and projection version;
 - portable conformance fixtures and tests.
 
 TRIA does **not** own API credentials, network transport, retries, provider SDK clients, RAG, vector memory, agent orchestration, biometrics, dashboards, or metaphysical claims.
@@ -104,6 +106,6 @@ python -m build
 
 ## Status
 
-`0.1.0a2` is an experimental alpha intended for falsification, integration testing, and architectural hardening. Passing tests establish encoded behavior only, not scientific validation, legitimate consent, legal compliance, or deployment safety.
+`0.1.0a3` is an experimental alpha intended for falsification, integration testing, interoperability testing, and architectural hardening. Passing tests establish encoded behavior only, not scientific validation, legitimate consent, legal compliance, or deployment safety.
 
 The canonical architectural baseline is in [`docs/TRIA_CORE_SPEC_v0.1.1.md`](docs/TRIA_CORE_SPEC_v0.1.1.md).
