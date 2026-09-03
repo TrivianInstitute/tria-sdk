@@ -91,11 +91,40 @@ class PermissionRecord:
 
 
 @dataclass(frozen=True, slots=True)
+class PolicyAuthorityRecord:
+    authority_holder: str
+    authority_scope: str
+    granted_by: str
+    active: bool = True
+
+
+@dataclass(frozen=True, slots=True)
+class PolicyDefinitionRecord:
+    policy_id: str
+    policy_version: str
+    authored_by: str
+    authority_scope: str
+    provenance_refs: tuple[str, ...] = ()
+    consent_impacting: bool = False
+    supersedes_version: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class PolicyAdoptionRecord:
     policy_id: str
     policy_version: str
     adopted_by: str
     authority_scope: str
+    active: bool = True
+
+
+@dataclass(frozen=True, slots=True)
+class ReconsentRequirement:
+    actor: str
+    scope: str
+    policy_id: str
+    policy_version: str
+    reason: str
     active: bool = True
 
 
