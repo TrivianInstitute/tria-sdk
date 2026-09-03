@@ -17,6 +17,17 @@ def _relationships():
     return source, target
 
 
+def _disclosure(source, target):
+    source.grant_permission("human:a", "agent:source", "claim:profile", Capability.DISCLOSE)
+    return disclose_reference(
+        source,
+        actor="agent:source",
+        resource="claim:profile",
+        reference="vault:claim:42",
+        target_relationship_id=target.relationship_id,
+    )
+
+
 def test_read_permission_does_not_authorize_disclosure():
     source, target = _relationships()
     source.grant_permission("human:a", "agent:source", "claim:profile", Capability.READ)
@@ -31,17 +42,19 @@ def test_read_permission_does_not_authorize_disclosure():
         )
 
 
+def test_destination_store_authority_is_required_for_admission():
+    source, target = _relationships()
+    disclosure = _disclosure(source, target)
+
+    with pytest.raises(CrossBoundaryGovernanceError):
+        admit_disclosure(target, source, disclosure, actor="human:a")
+
+
 def test_disclosure_requires_explicit_admission_and_preserves_source_provenance():
     source, target = _relationships()
-    source.grant_permission("human:a", "agent:source", "claim:profile", Capability.DISCLOSE)
+    disclosure = _disclosure(source, target)
+    target.grant_permission("human:a", "human:a", disclosure.admitted_resource, Capability.STORE)
 
-    disclosure = disclose_reference(
-        source,
-        actor="agent:source",
-        resource="claim:profile",
-        reference="vault:claim:42",
-        target_relationship_id=target.relationship_id,
-    )
     admission = admit_disclosure(target, source, disclosure, actor="human:a")
 
     assert admission.event_type == "ReferenceAdmitted"
@@ -53,14 +66,8 @@ def test_disclosure_requires_explicit_admission_and_preserves_source_provenance(
 
 def test_disclosure_does_not_grant_derivation_authority():
     source, target = _relationships()
-    source.grant_permission("human:a", "agent:source", "claim:profile", Capability.DISCLOSE)
-    disclosure = disclose_reference(
-        source,
-        actor="agent:source",
-        resource="claim:profile",
-        reference="vault:claim:42",
-        target_relationship_id=target.relationship_id,
-    )
+    disclosure = _disclosure(source, target)
+    target.grant_permission("human:a", "human:a", disclosure.admitted_resource, Capability.STORE)
     admit_disclosure(target, source, disclosure, actor="human:a")
 
     with pytest.raises(CrossBoundaryGovernanceError):
@@ -86,20 +93,16 @@ def test_disclosure_does_not_grant_derivation_authority():
 
     assert event.event_type == "ReferenceDerived"
     assert event.payload["result_ref"] == "vault:derived:1"
-    assert event.causal_parents
+    assert event.causal_parents == (next(
+        item.event_id for item in target.events if item.event_type == "ReferenceAdmitted"
+    ),)
 
 
 def test_disclosure_cannot_be_admitted_into_wrong_relationship():
     source, target = _relationships()
     third = Tria(source._store).create_relationship(["human:a", "agent:third"])
-    source.grant_permission("human:a", "agent:source", "claim:profile", Capability.DISCLOSE)
-    disclosure = disclose_reference(
-        source,
-        actor="agent:source",
-        resource="claim:profile",
-        reference="vault:claim:42",
-        target_relationship_id=target.relationship_id,
-    )
+    disclosure = _disclosure(source, target)
+    third.grant_permission("human:a", "human:a", disclosure.admitted_resource, Capability.STORE)
 
     with pytest.raises(CrossBoundaryGovernanceError):
         admit_disclosure(third, source, disclosure, actor="human:a")
@@ -107,14 +110,8 @@ def test_disclosure_cannot_be_admitted_into_wrong_relationship():
 
 def test_tampered_disclosure_handle_fails_closed():
     source, target = _relationships()
-    source.grant_permission("human:a", "agent:source", "claim:profile", Capability.DISCLOSE)
-    disclosure = disclose_reference(
-        source,
-        actor="agent:source",
-        resource="claim:profile",
-        reference="vault:claim:42",
-        target_relationship_id=target.relationship_id,
-    )
+    disclosure = _disclosure(source, target)
+    target.grant_permission("human:a", "human:a", disclosure.admitted_resource, Capability.STORE)
     tampered = disclosure.__class__(
         disclosure_id=disclosure.disclosure_id,
         source_relationship_id=disclosure.source_relationship_id,
