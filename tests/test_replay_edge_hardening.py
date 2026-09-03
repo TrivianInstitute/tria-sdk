@@ -2,11 +2,13 @@ import copy
 
 import pytest
 
-from tria import InMemoryEventStore, ReplayImportError, Tria, export_replay_bundle, import_replay_bundle, verify_replay_bundle
+from tria import Capability, InMemoryEventStore, ReplayImportError, Tria, export_replay_bundle, import_replay_bundle, replay_export_resource, verify_replay_bundle
 
 
 def _bundle_dict():
-    return export_replay_bundle(Tria().create_relationship(["human:a", "agent:b"])).to_dict()
+    rel = Tria().create_relationship(["human:a", "agent:b"])
+    rel.grant_permission("human:a", "human:a", replay_export_resource(rel.relationship_id), Capability.DISCLOSE)
+    return export_replay_bundle(rel, actor="human:a").to_dict()
 
 
 def test_malformed_events_container_fails_closed():

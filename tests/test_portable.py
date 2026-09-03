@@ -5,6 +5,7 @@ from tria import (
     EpistemicType,
     Tria,
     export_replay_bundle,
+    replay_export_resource,
     verify_replay_bundle,
 )
 
@@ -18,11 +19,16 @@ def _relationship():
         source_refs=["test:source"],
     )
     rel.grant_permission("human:a", "agent:b", f"claim:{claim.claim_id}", Capability.READ)
+    rel.grant_permission("human:a", "human:a", replay_export_resource(rel.relationship_id), Capability.DISCLOSE)
     return rel
 
 
+def _bundle():
+    return export_replay_bundle(_relationship(), actor="human:a")
+
+
 def test_exported_bundle_verifies_after_json_round_trip():
-    bundle = export_replay_bundle(_relationship())
+    bundle = _bundle()
     decoded = json.loads(bundle.to_json())
 
     result = verify_replay_bundle(decoded)
@@ -35,7 +41,7 @@ def test_exported_bundle_verifies_after_json_round_trip():
 
 
 def test_tampered_event_fails_bundle_verification():
-    bundle = export_replay_bundle(_relationship()).to_dict()
+    bundle = _bundle().to_dict()
     bundle["events"][0]["payload"]["participants"] = ["attacker"]
 
     result = verify_replay_bundle(bundle)
@@ -45,7 +51,7 @@ def test_tampered_event_fails_bundle_verification():
 
 
 def test_tampered_projection_fails_even_when_event_chain_is_valid():
-    bundle = export_replay_bundle(_relationship()).to_dict()
+    bundle = _bundle().to_dict()
     bundle["projection"]["participants"] = ["someone-else"]
 
     result = verify_replay_bundle(bundle)

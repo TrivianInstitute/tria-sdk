@@ -2,7 +2,7 @@ import copy
 
 import pytest
 
-from tria import EpistemicType, InMemoryEventStore, ReplayImportError, SQLiteEventStore, Tria, export_replay_bundle
+from tria import Capability, EpistemicType, InMemoryEventStore, ReplayImportError, SQLiteEventStore, Tria, export_replay_bundle, replay_export_resource
 
 
 def _source_bundle():
@@ -15,7 +15,8 @@ def _source_bundle():
         "Portable history survives implementation boundaries.",
         source_refs=["test:portable"],
     )
-    return rel, export_replay_bundle(rel)
+    rel.grant_permission("human:a", "human:a", replay_export_resource(rel.relationship_id), Capability.DISCLOSE)
+    return rel, export_replay_bundle(rel, actor="human:a")
 
 
 def test_restore_relationship_preserves_event_identity_and_projection():
