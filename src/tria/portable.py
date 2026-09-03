@@ -18,12 +18,22 @@ from .compat import (
 from .events import RelationalEvent, verify_event_chain
 from .state import RelationalState, reduce_events
 from .store import EventStore
+from .types import Capability, GovernanceOutcome
 
 BUNDLE_FORMAT_VERSION = CURRENT_BUNDLE_FORMAT_VERSION
 
 
 class ReplayImportError(ValueError):
     pass
+
+
+class ReplayExportError(PermissionError):
+    pass
+
+
+def replay_export_resource(relationship_id: str) -> str:
+    """Return the aggregate resource governed for full replay-bundle disclosure."""
+    return f"relationship:{relationship_id}"
 
 
 def _portable(value: Any) -> Any:
@@ -33,7 +43,7 @@ def _portable(value: Any) -> Any:
         return value.value
     if is_dataclass(value):
         return {key: _portable(item) for key, item in asdict(value).items()}
-    if isinstance(value, dict):
+    if isinstance(value, Mapping):
         return {str(key): _portable(item) for key, item in value.items()}
     if isinstance(value, (list, tuple)):
         return [_portable(item) for item in value]
@@ -106,7 +116,7 @@ class BundleVerification:
     reason: str = ""
 
 
-def export_replay_bundle(relationship) -> ReplayBundle:
+def _build_replay_bundle(relationship) -> ReplayBundle:
     events = tuple(event.to_dict() for event in relationship.events)
     state = relationship.state
     projection = state_to_dict(state)
@@ -119,6 +129,39 @@ def export_replay_bundle(relationship) -> ReplayBundle:
         projection=projection,
         projection_sha256=projection_digest(state),
     )
+
+
+def export_replay_bundle(
+    relationship,
+    *,
+    actor: str,
+    purpose: str | None = None,
+    satisfied_conditions: tuple[str, ...] = (),
+) -> ReplayBundle:
+    """Export full relational history only under active aggregate DISCLOSE authority."""
+    resource = replay_export_resource(relationship.relationship_id)
+    decision = relationship.check_capability(
+        actor,
+        resource,
+        Capability.DISCLOSE,
+        purpose=purpose,
+        satisfied_conditions=satisfied_conditions,
+    )
+    relationship.record_governance_decision(
+        decision,
+        operation="export_replay_bundle",
+        actor=actor,
+        relationship_id=relationship.relationship_id,
+        resource=resource,
+        capability=Capability.DISCLOSE.value,
+        purpose=purpose,
+        satisfied_conditions=list(satisfied_conditions),
+    )
+    if decision.outcome is not GovernanceOutcome.ALLOW:
+        raise ReplayExportError(
+            f"{actor!r} cannot export full replay history without active DISCLOSE authority on {resource!r}."
+        )
+    return _build_replay_bundle(relationship)
 
 
 def _invalid(reason: str, *, event_count: int = 0, chain_valid: bool = False, relationship_valid: bool = False) -> BundleVerification:
