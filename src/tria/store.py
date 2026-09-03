@@ -4,13 +4,14 @@ from collections import defaultdict
 import json
 import sqlite3
 from pathlib import Path
-from typing import Protocol
+from typing import Iterable, Protocol
 
 from .events import RelationalEvent
 
 
 class EventStore(Protocol):
     def append(self, event: RelationalEvent) -> None: ...
+    def append_many(self, events: Iterable[RelationalEvent]) -> None: ...
     def list(self, relationship_id: str) -> list[RelationalEvent]: ...
 
 
@@ -20,6 +21,11 @@ class InMemoryEventStore:
 
     def append(self, event: RelationalEvent) -> None:
         self._events[event.relationship_id].append(event)
+
+    def append_many(self, events: Iterable[RelationalEvent]) -> None:
+        events = list(events)
+        for event in events:
+            self._events[event.relationship_id].append(event)
 
     def list(self, relationship_id: str) -> list[RelationalEvent]:
         return list(self._events.get(relationship_id, ()))
@@ -53,12 +59,24 @@ class SQLiteEventStore:
             )
             conn.execute("CREATE INDEX IF NOT EXISTS idx_events_relationship ON events(relationship_id, commit_index)")
 
-    def append(self, event: RelationalEvent) -> None:
+    @staticmethod
+    def _row(event: RelationalEvent) -> tuple[str, str, str]:
         payload = json.dumps(event.to_dict(), sort_keys=True, separators=(",", ":"))
+        return event.event_id, event.relationship_id, payload
+
+    def append(self, event: RelationalEvent) -> None:
         with self._connect() as conn:
             conn.execute(
                 "INSERT INTO events(event_id, relationship_id, event_json) VALUES (?, ?, ?)",
-                (event.event_id, event.relationship_id, payload),
+                self._row(event),
+            )
+
+    def append_many(self, events: Iterable[RelationalEvent]) -> None:
+        rows = [self._row(event) for event in events]
+        with self._connect() as conn:
+            conn.executemany(
+                "INSERT INTO events(event_id, relationship_id, event_json) VALUES (?, ?, ?)",
+                rows,
             )
 
     def list(self, relationship_id: str) -> list[RelationalEvent]:
