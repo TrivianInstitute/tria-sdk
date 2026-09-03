@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -8,10 +9,11 @@ from typing import Any, Iterable
 from uuid import uuid4
 
 from .compat import CURRENT_EVENT_SCHEMA_VERSION, require_supported_event_schema
+from .immutability import deep_freeze, deep_thaw
 
 
-def _canonical_json(data: dict[str, Any]) -> str:
-    return json.dumps(data, sort_keys=True, separators=(",", ":"), default=str)
+def _canonical_json(data: Mapping[str, Any]) -> str:
+    return json.dumps(deep_thaw(data), sort_keys=True, separators=(",", ":"), default=str)
 
 
 def _parse_datetime(value: str | datetime | None) -> datetime | None:
@@ -25,12 +27,16 @@ class EventProposal:
     relationship_id: str
     event_type: str
     actor_id: str
-    payload: dict[str, Any]
+    payload: Mapping[str, Any]
     actor_sequence: int
     causal_parents: tuple[str, ...] = ()
     observed_at: datetime | None = None
     schema_version: str = CURRENT_EVENT_SCHEMA_VERSION
     policy_version: str = "0.1"
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "payload", deep_freeze(self.payload))
+        object.__setattr__(self, "causal_parents", tuple(self.causal_parents))
 
 
 @dataclass(frozen=True, slots=True)
@@ -43,11 +49,31 @@ class RelationalEvent:
     causal_parents: tuple[str, ...]
     observed_at: datetime | None
     committed_at: datetime
-    payload: dict[str, Any]
+    payload: Mapping[str, Any]
     schema_version: str
     policy_version: str
     previous_event_hash: str | None
     event_hash: str
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "payload", deep_freeze(self.payload))
+        object.__setattr__(self, "causal_parents", tuple(self.causal_parents))
+
+    def _hash_material(self) -> dict[str, Any]:
+        return {
+            "event_id": self.event_id,
+            "relationship_id": self.relationship_id,
+            "event_type": self.event_type,
+            "actor_id": self.actor_id,
+            "actor_sequence": self.actor_sequence,
+            "causal_parents": self.causal_parents,
+            "observed_at": self.observed_at,
+            "committed_at": self.committed_at,
+            "payload": self.payload,
+            "schema_version": self.schema_version,
+            "policy_version": self.policy_version,
+            "previous_event_hash": self.previous_event_hash,
+        }
 
     @classmethod
     def commit(cls, proposal: EventProposal, previous_event_hash: str | None) -> "RelationalEvent":
@@ -72,20 +98,18 @@ class RelationalEvent:
         return cls(event_hash=digest, **material)
 
     def verify_hash(self) -> bool:
-        material = asdict(self)
-        expected = material.pop("event_hash")
-        digest = hashlib.sha256(_canonical_json(material).encode("utf-8")).hexdigest()
-        return digest == expected
+        digest = hashlib.sha256(_canonical_json(self._hash_material()).encode("utf-8")).hexdigest()
+        return digest == self.event_hash
 
     def to_dict(self) -> dict[str, Any]:
-        data = asdict(self)
-        data["causal_parents"] = list(self.causal_parents)
+        data = deep_thaw(self._hash_material())
         data["observed_at"] = self.observed_at.isoformat() if self.observed_at else None
         data["committed_at"] = self.committed_at.isoformat()
+        data["event_hash"] = self.event_hash
         return data
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "RelationalEvent":
+    def from_dict(cls, data: Mapping[str, Any]) -> "RelationalEvent":
         schema_version = data.get("schema_version", CURRENT_EVENT_SCHEMA_VERSION)
         require_supported_event_schema(schema_version)
         return cls(
@@ -97,7 +121,7 @@ class RelationalEvent:
             causal_parents=tuple(data.get("causal_parents", ())),
             observed_at=_parse_datetime(data.get("observed_at")),
             committed_at=_parse_datetime(data["committed_at"]),
-            payload=dict(data.get("payload", {})),
+            payload=data.get("payload", {}),
             schema_version=schema_version,
             policy_version=data.get("policy_version", "0.1"),
             previous_event_hash=data.get("previous_event_hash"),
