@@ -77,6 +77,13 @@ class Runtime:
 
         lifecycle_decision = GovernanceEngine().require_runtime_execution(relationship.state)
         decisions.append(lifecycle_decision)
+        relationship.record_governance_decision(
+            lifecycle_decision,
+            operation="runtime.prepare",
+            request_id=request.request_id,
+            requested_by=request.requested_by,
+            check="lifecycle",
+        )
         if lifecycle_decision.outcome is not GovernanceOutcome.ALLOW:
             relationship.record_invocation_resolution(request.requested_by, request.request_id, "BLOCKED", reason=lifecycle_decision.reason)
             return InvocationPlan(request=request, outcome=lifecycle_decision.outcome, decisions=tuple(decisions), reason=lifecycle_decision.reason)
@@ -89,6 +96,17 @@ class Runtime:
                 satisfied_conditions=requirement.satisfied_conditions,
             )
             decisions.append(decision)
+            relationship.record_governance_decision(
+                decision,
+                operation="runtime.prepare",
+                request_id=request.request_id,
+                requested_by=request.requested_by,
+                check="consent",
+                actor=requirement.actor,
+                scope=requirement.scope,
+                purpose=requirement.purpose,
+                satisfied_conditions=list(requirement.satisfied_conditions),
+            )
             if decision.outcome is not GovernanceOutcome.ALLOW:
                 relationship.record_invocation_resolution(request.requested_by, request.request_id, "BLOCKED", reason=decision.reason)
                 return InvocationPlan(request=request, outcome=decision.outcome, decisions=tuple(decisions), reason=decision.reason)
@@ -108,6 +126,18 @@ class Runtime:
                 satisfied_conditions=requirement.satisfied_conditions,
             )
             decisions.append(decision)
+            relationship.record_governance_decision(
+                decision,
+                operation="runtime.prepare",
+                request_id=request.request_id,
+                requested_by=request.requested_by,
+                check="capability",
+                grantee=request.requested_by,
+                resource=requirement.resource,
+                capability=requirement.capability.value,
+                purpose=requirement.purpose,
+                satisfied_conditions=list(requirement.satisfied_conditions),
+            )
             if decision.outcome is not GovernanceOutcome.ALLOW:
                 relationship.record_invocation_resolution(request.requested_by, request.request_id, "BLOCKED", reason=decision.reason)
                 return InvocationPlan(request=request, outcome=decision.outcome, decisions=tuple(decisions), reason=decision.reason)
