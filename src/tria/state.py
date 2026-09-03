@@ -58,7 +58,7 @@ def reduce_events(relationship_id: str, events: Iterable[RelationalEvent]) -> Re
             consent[(record.actor, record.scope)] = record
             reconsent = dict(state.reconsent_requirements)
             reconsent.pop((record.actor, record.scope), None)
-            state = replace(state, consent=consent, reconsent_requirements=reconsent, lifecycle=LifecycleState.ACTIVE, last_event_id=event.event_id)
+            state = replace(state, consent=consent, reconsent_requirements=reconsent, last_event_id=event.event_id)
         elif event.event_type == "ConsentRevoked":
             consent = dict(state.consent)
             key = (p["actor"], p["scope"])
