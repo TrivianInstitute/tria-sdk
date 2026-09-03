@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 from typing import Iterable
 
+from .compat import CURRENT_PROJECTION_VERSION
 from .events import RelationalEvent
 from .types import (
     Capability,
@@ -27,7 +28,7 @@ class RelationalState:
     claims: dict[str, Claim] = field(default_factory=dict)
     disagreements: dict[str, tuple[str, ...]] = field(default_factory=dict)
     last_event_id: str | None = None
-    projection_version: str = "0.2"
+    projection_version: str = CURRENT_PROJECTION_VERSION
 
 
 def reduce_events(relationship_id: str, events: Iterable[RelationalEvent]) -> RelationalState:
@@ -51,15 +52,7 @@ def reduce_events(relationship_id: str, events: Iterable[RelationalEvent]) -> Re
         elif event.event_type == "PermissionGranted":
             permissions = dict(state.permissions)
             capability = Capability(p["capability"])
-            record = PermissionRecord(
-                grantee=p["grantee"],
-                resource=p["resource"],
-                capability=capability,
-                granted_by=p["granted_by"],
-                purpose=p.get("purpose"),
-                policy_version=event.policy_version,
-                active=True,
-            )
+            record = PermissionRecord(grantee=p["grantee"], resource=p["resource"], capability=capability, granted_by=p["granted_by"], purpose=p.get("purpose"), policy_version=event.policy_version, active=True)
             permissions[(record.grantee, record.resource, capability)] = record
             state = replace(state, permissions=permissions, last_event_id=event.event_id)
         elif event.event_type == "PermissionRevoked":
@@ -71,13 +64,7 @@ def reduce_events(relationship_id: str, events: Iterable[RelationalEvent]) -> Re
             state = replace(state, permissions=permissions, last_event_id=event.event_id)
         elif event.event_type == "PolicyAdopted":
             adoptions = dict(state.policy_adoptions)
-            record = PolicyAdoptionRecord(
-                policy_id=p["policy_id"],
-                policy_version=p["policy_version"],
-                adopted_by=p["adopted_by"],
-                authority_scope=p["authority_scope"],
-                active=True,
-            )
+            record = PolicyAdoptionRecord(policy_id=p["policy_id"], policy_version=p["policy_version"], adopted_by=p["adopted_by"], authority_scope=p["authority_scope"], active=True)
             adoptions[(record.policy_id, record.policy_version)] = record
             state = replace(state, policy_adoptions=adoptions, last_event_id=event.event_id)
         elif event.event_type == "PolicyRevoked":
