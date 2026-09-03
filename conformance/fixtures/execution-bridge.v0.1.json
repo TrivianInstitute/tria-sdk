@@ -1,0 +1,12 @@
+{
+  "fixture_version": "0.1",
+  "name": "execution-bridge",
+  "description": "A conforming execution bridge must invoke caller-owned transport only after runtime authorization and must record the normalized result.",
+  "expect": {
+    "authorized_plan_translates": true,
+    "blocked_plan_does_not_execute": true,
+    "caller_owns_transport": true,
+    "result_recorded": true,
+    "provider_objects_do_not_enter_core": true
+  }
+}
