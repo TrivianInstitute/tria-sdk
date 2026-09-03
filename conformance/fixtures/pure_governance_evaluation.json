@@ -1,0 +1,13 @@
+{
+  "name": "pure-governance-evaluation",
+  "version": "0.1",
+  "requirements": [
+    "Capability, consent, policy-adoption, lifecycle-authority, policy-authority, and lifecycle-transition checks do not append relational events.",
+    "A governance decision may be appended explicitly as a GovernanceEvaluated event.",
+    "Governed operations such as runtime invocation may explicitly record the decisions they rely upon."
+  ],
+  "forbidden": [
+    "A read-only authorization check mutating relationship history as an implicit side effect.",
+    "Loss of governance auditability when an operation intentionally records a decision."
+  ]
+}
