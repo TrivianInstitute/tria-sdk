@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass, is_dataclass
 from datetime import datetime
 from enum import Enum
@@ -120,49 +121,111 @@ def export_replay_bundle(relationship) -> ReplayBundle:
     )
 
 
+def _invalid(reason: str, *, event_count: int = 0, chain_valid: bool = False, relationship_valid: bool = False) -> BundleVerification:
+    return BundleVerification(False, chain_valid, relationship_valid, False, event_count, reason)
+
+
+def _bundle_mapping(bundle: ReplayBundle | Mapping[str, Any]) -> dict[str, Any] | None:
+    if isinstance(bundle, ReplayBundle):
+        return bundle.to_dict()
+    if isinstance(bundle, Mapping):
+        return dict(bundle)
+    return None
+
+
+def _valid_version_header(data: Mapping[str, Any], key: str) -> bool:
+    value = data.get(key)
+    return isinstance(value, str) and bool(value)
+
+
 def verify_replay_bundle(bundle: ReplayBundle | dict[str, Any]) -> BundleVerification:
-    data = bundle.to_dict() if isinstance(bundle, ReplayBundle) else dict(bundle)
-    event_count = len(data.get("events", ()))
+    data = _bundle_mapping(bundle)
+    if data is None:
+        return _invalid("Replay bundle must be a mapping or ReplayBundle.")
+
+    raw_events = data.get("events")
+    if not isinstance(raw_events, Sequence) or isinstance(raw_events, (str, bytes, bytearray)):
+        return _invalid("Replay bundle events must be an array.")
+    event_count = len(raw_events)
+    if event_count == 0:
+        return _invalid("Replay bundle must contain at least one relational event.")
+
+    for key in ("event_schema_version", "projection_version", "format_version"):
+        if not _valid_version_header(data, key):
+            return _invalid(f"Replay bundle {key} must be a non-empty string.", event_count=event_count)
 
     try:
         require_supported_compatibility(
-            str(data.get("event_schema_version", "")),
-            projection_version=str(data.get("projection_version", "")),
-            bundle_format_version=str(data.get("format_version", "")),
+            data["event_schema_version"],
+            projection_version=data["projection_version"],
+            bundle_format_version=data["format_version"],
         )
     except SchemaCompatibilityError as exc:
-        return BundleVerification(False, False, False, False, event_count, str(exc))
+        return _invalid(str(exc), event_count=event_count)
+
+    if not isinstance(data.get("relationship_id"), str) or not data["relationship_id"]:
+        return _invalid("Replay bundle relationship_id must be a non-empty string.", event_count=event_count)
+    if not isinstance(data.get("projection"), Mapping):
+        return _invalid("Replay bundle projection must be an object.", event_count=event_count)
+    if not isinstance(data.get("projection_sha256"), str) or not data["projection_sha256"]:
+        return _invalid("Replay bundle projection_sha256 must be a non-empty string.", event_count=event_count)
 
     try:
-        events = [RelationalEvent.from_dict(item) for item in data.get("events", [])]
+        events = [RelationalEvent.from_dict(item) for item in raw_events]
     except (KeyError, TypeError, ValueError) as exc:
-        return BundleVerification(False, False, False, False, 0, f"Invalid event payload: {exc}")
+        return _invalid(f"Invalid event payload: {exc}", event_count=event_count)
 
     envelope_schema = data["event_schema_version"]
     if any(event.schema_version != envelope_schema for event in events):
-        return BundleVerification(False, False, False, False, len(events), "Bundle event schema envelope does not match every contained event.")
+        return _invalid("Bundle event schema envelope does not match every contained event.", event_count=len(events))
 
-    relationship_id = data.get("relationship_id")
-    relationship_valid = bool(relationship_id) and all(event.relationship_id == relationship_id for event in events)
+    relationship_id = data["relationship_id"]
+    relationship_valid = all(event.relationship_id == relationship_id for event in events)
+    if not relationship_valid:
+        return _invalid("Relationship identifiers do not match.", event_count=len(events))
+
+    root = events[0]
+    if root.event_type != "RelationshipCreated" or root.actor_id != "tria:system":
+        return _invalid(
+            "Replay history must begin with a RelationshipCreated event authored by tria:system.",
+            event_count=len(events),
+            relationship_valid=True,
+        )
+    if any(event.event_type == "RelationshipCreated" for event in events[1:]):
+        return _invalid(
+            "Replay history must contain exactly one RelationshipCreated root event.",
+            event_count=len(events),
+            relationship_valid=True,
+        )
+
     chain_valid = verify_event_chain(events)
-    if not relationship_valid or not chain_valid:
-        reason = "Relationship identifiers do not match." if not relationship_valid else "Event hash chain is invalid."
-        return BundleVerification(False, chain_valid, relationship_valid, False, len(events), reason)
+    if not chain_valid:
+        return _invalid("Event hash chain is invalid.", event_count=len(events), relationship_valid=True)
 
     state = reduce_events(relationship_id, events)
     expected_projection = state_to_dict(state)
     expected_digest = projection_digest(state)
     projection_valid = (
-        data.get("projection") == expected_projection
-        and data.get("projection_sha256") == expected_digest
-        and data.get("projection_version") == state.projection_version
+        dict(data["projection"]) == expected_projection
+        and data["projection_sha256"] == expected_digest
+        and data["projection_version"] == state.projection_version
     )
-    return BundleVerification(projection_valid, chain_valid, relationship_valid, projection_valid, len(events), "" if projection_valid else "Projection does not match deterministic replay.")
+    return BundleVerification(
+        projection_valid,
+        chain_valid,
+        True,
+        projection_valid,
+        len(events),
+        "" if projection_valid else "Projection does not match deterministic replay.",
+    )
 
 
 def import_replay_bundle(store: EventStore, bundle: ReplayBundle | dict[str, Any]) -> str:
     """Restore a verified portable history into an empty relationship slot."""
-    data = bundle.to_dict() if isinstance(bundle, ReplayBundle) else dict(bundle)
+    data = _bundle_mapping(bundle)
+    if data is None:
+        raise ReplayImportError("Replay bundle must be a mapping or ReplayBundle.")
+
     verification = verify_replay_bundle(data)
     if not verification.valid:
         raise ReplayImportError(verification.reason or "Replay bundle verification failed.")
@@ -174,7 +237,7 @@ def import_replay_bundle(store: EventStore, bundle: ReplayBundle | dict[str, Any
     try:
         events = [RelationalEvent.from_dict(item) for item in data["events"]]
         store.append_many(events)
-    except Exception as exc:
+    except (KeyError, TypeError, ValueError, RuntimeError) as exc:
         raise ReplayImportError(f"Replay bundle import failed: {exc}") from exc
 
     restored = store.list(relationship_id)
