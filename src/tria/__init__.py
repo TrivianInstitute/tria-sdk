@@ -12,6 +12,8 @@ from .types import (
     GovernanceDecision,
     GovernanceOutcome,
     LifecycleState,
+    PermissionRecord,
+    PolicyAdoptionRecord,
 )
 
 __all__ = [
@@ -29,8 +31,10 @@ __all__ = [
     "GovernanceOutcome",
     "InMemoryEventStore",
     "LifecycleState",
+    "PermissionRecord",
     "Policy",
     "PolicyAdoption",
+    "PolicyAdoptionRecord",
     "RelationalEvent",
     "RelationalState",
     "Relationship",

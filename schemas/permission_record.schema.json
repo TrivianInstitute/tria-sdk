@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trivianinstitute.org/tria/schemas/permission_record.schema.json",
+  "title": "TRIA Permission Record",
+  "type": "object",
+  "required": ["grantee", "resource", "capability", "granted_by", "active"],
+  "properties": {
+    "grantee": {"type": "string"},
+    "resource": {"type": "string"},
+    "capability": {"enum": ["STORE", "READ", "DISCLOSE", "DERIVE", "ACT", "DELEGATE"]},
+    "granted_by": {"type": "string"},
+    "purpose": {"type": ["string", "null"]},
+    "policy_version": {"type": "string"},
+    "active": {"type": "boolean"}
+  },
+  "additionalProperties": false
+}

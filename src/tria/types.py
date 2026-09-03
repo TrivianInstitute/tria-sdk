@@ -80,6 +80,26 @@ class ConsentRecord:
 
 
 @dataclass(frozen=True, slots=True)
+class PermissionRecord:
+    grantee: str
+    resource: str
+    capability: Capability
+    granted_by: str
+    purpose: str | None = None
+    policy_version: str = "0.1"
+    active: bool = True
+
+
+@dataclass(frozen=True, slots=True)
+class PolicyAdoptionRecord:
+    policy_id: str
+    policy_version: str
+    adopted_by: str
+    authority_scope: str
+    active: bool = True
+
+
+@dataclass(frozen=True, slots=True)
 class GovernanceDecision:
     outcome: GovernanceOutcome
     policy_id: str

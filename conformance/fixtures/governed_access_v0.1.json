@@ -1,0 +1,17 @@
+{
+  "fixture_version": "0.1",
+  "name": "governed-access",
+  "description": "Storage, reading, disclosure, derivation, action, and delegation are distinct capabilities and must fail closed when not explicitly active.",
+  "operations": [
+    {"type": "grant_permission", "granted_by": "human:a", "grantee": "agent:b", "resource": "claim:1", "capability": "STORE"},
+    {"type": "check_permission", "grantee": "agent:b", "resource": "claim:1", "capability": "READ"},
+    {"type": "grant_permission", "granted_by": "human:a", "grantee": "agent:b", "resource": "claim:1", "capability": "READ"},
+    {"type": "check_permission", "grantee": "agent:b", "resource": "claim:1", "capability": "DERIVE"}
+  ],
+  "expect": {
+    "store": "ALLOW",
+    "read_before_grant": "BLOCK",
+    "read_after_grant": "ALLOW",
+    "derive_without_grant": "BLOCK"
+  }
+}
