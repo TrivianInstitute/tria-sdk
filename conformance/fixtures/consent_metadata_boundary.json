@@ -1,0 +1,15 @@
+{
+  "fixture_version": "0.1",
+  "name": "consent-metadata-boundary",
+  "description": "A conforming runtime requires declared consent independently from capabilities and minimizes raw execution content in Core events.",
+  "expect": {
+    "permission_does_not_replace_consent": true,
+    "revoked_consent_blocks": true,
+    "context_not_materialized_before_consent": true,
+    "raw_action_not_persisted": true,
+    "request_metadata_not_persisted": true,
+    "provider_metadata_not_persisted": true,
+    "action_digest_or_reference_allowed": true,
+    "output_reference_allowed": true
+  }
+}

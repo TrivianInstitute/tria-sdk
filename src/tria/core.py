@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
 from uuid import uuid4
 
 from .events import EventProposal, RelationalEvent, verify_event_chain
@@ -178,13 +179,26 @@ class Relationship:
         return decision
 
     def record_invocation_proposed(self, request) -> RelationalEvent:
-        return self._commit("InvocationProposed", request.requested_by, {"request_id": request.request_id, "action": request.action, "target": request.target, "context_resources": list(request.context_resources), "requirements": [{"resource": item.resource, "capability": item.capability.value} for item in request.requirements], "metadata": dict(request.metadata)})
+        action_digest = hashlib.sha256(request.action.encode("utf-8")).hexdigest()
+        return self._commit("InvocationProposed", request.requested_by, {
+            "request_id": request.request_id,
+            "action_digest": action_digest,
+            "action_ref": request.action_ref,
+            "target": request.target,
+            "context_resources": list(request.context_resources),
+            "requirements": [{"resource": item.resource, "capability": item.capability.value} for item in request.requirements],
+            "consent_requirements": [{"actor": item.actor, "scope": item.scope} for item in request.consent_requirements],
+        })
 
     def record_invocation_resolution(self, actor: str, request_id: str, status: str, *, reason: str) -> RelationalEvent:
         return self._commit("InvocationResolved", "tria:governance", {"request_id": request_id, "requested_by": actor, "status": status, "reason": reason})
 
     def record_invocation_result(self, result) -> RelationalEvent:
-        return self._commit("InvocationResultRecorded", result.produced_by, {"request_id": result.request_id, "status": result.status, "output_ref": result.output_ref, "metadata": dict(result.metadata)})
+        return self._commit("InvocationResultRecorded", result.produced_by, {
+            "request_id": result.request_id,
+            "status": result.status,
+            "output_ref": result.output_ref,
+        })
 
     def audit(self) -> dict:
         events = self.events

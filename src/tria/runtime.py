@@ -15,14 +15,22 @@ class CapabilityRequirement:
 
 
 @dataclass(frozen=True, slots=True)
+class ConsentRequirement:
+    actor: str
+    scope: str
+
+
+@dataclass(frozen=True, slots=True)
 class InvocationRequest:
     requested_by: str
     action: str
     target: str
     context_resources: tuple[str, ...] = ()
     requirements: tuple[CapabilityRequirement, ...] = ()
+    consent_requirements: tuple[ConsentRequirement, ...] = ()
     request_id: str = field(default_factory=lambda: str(uuid4()))
     metadata: dict[str, Any] = field(default_factory=dict)
+    action_ref: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -61,11 +69,30 @@ class Runtime:
     Runtime prepares an invocation but never calls a provider itself. Applications
     may hand the resulting plan to any model, agent, deterministic service, or
     other executor. Only explicitly requested and READ-authorized context is
-    surfaced.
+    surfaced. Consent requirements are evaluated independently from capabilities;
+    both must pass when both are declared.
     """
 
     def prepare(self, relationship: Relationship, request: InvocationRequest) -> InvocationPlan:
         relationship.record_invocation_proposed(request)
+
+        decisions: list[GovernanceDecision] = []
+        for requirement in request.consent_requirements:
+            decision = relationship.require_consent(requirement.actor, requirement.scope)
+            decisions.append(decision)
+            if decision.outcome is not GovernanceOutcome.ALLOW:
+                relationship.record_invocation_resolution(
+                    request.requested_by,
+                    request.request_id,
+                    "BLOCKED",
+                    reason=decision.reason,
+                )
+                return InvocationPlan(
+                    request=request,
+                    outcome=decision.outcome,
+                    decisions=tuple(decisions),
+                    reason=decision.reason,
+                )
 
         requirements = list(request.requirements)
         for resource in request.context_resources:
@@ -73,7 +100,6 @@ class Runtime:
             if read_requirement not in requirements:
                 requirements.append(read_requirement)
 
-        decisions: list[GovernanceDecision] = []
         for requirement in requirements:
             decision = relationship.check_capability(
                 request.requested_by,
@@ -100,14 +126,14 @@ class Runtime:
             request.requested_by,
             request.request_id,
             "AUTHORIZED",
-            reason="All required capabilities are active.",
+            reason="All required consent and capabilities are active.",
         )
         return InvocationPlan(
             request=request,
             outcome=GovernanceOutcome.ALLOW,
             decisions=tuple(decisions),
             context=context,
-            reason="All required capabilities are active.",
+            reason="All required consent and capabilities are active.",
         )
 
     def record_result(self, relationship: Relationship, result: InvocationResult) -> None:
