@@ -1,3 +1,11 @@
+from .compat import (
+    CURRENT_EVENT_SCHEMA_VERSION,
+    CURRENT_PROJECTION_VERSION,
+    CompatibilityReport,
+    SchemaCompatibilityError,
+    check_event_schema,
+    require_supported_event_schema,
+)
 from .core import ClaimHandle, EpistemicAdmissionError, Relationship, Tria
 from .events import EventProposal, RelationalEvent, verify_event_chain
 from .execution import ExecutionBridge, ExecutionReceipt, Executor
@@ -34,8 +42,11 @@ __all__ = [
     "Claim",
     "ClaimHandle",
     "ClaimStatus",
+    "CompatibilityReport",
     "ConsentRecord",
     "ContextItem",
+    "CURRENT_EVENT_SCHEMA_VERSION",
+    "CURRENT_PROJECTION_VERSION",
     "EpistemicAdmissionError",
     "EpistemicType",
     "EventProposal",
@@ -65,7 +76,10 @@ __all__ = [
     "Relationship",
     "Runtime",
     "SQLiteEventStore",
+    "SchemaCompatibilityError",
     "Tria",
     "__version__",
+    "check_event_schema",
+    "require_supported_event_schema",
     "verify_event_chain",
 ]
