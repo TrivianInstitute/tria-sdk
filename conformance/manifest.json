@@ -18,6 +18,8 @@
     "explicit_authorization_conditions",
     "pure_governance_evaluation",
     "explicit_governance_audit_recording",
+    "runtime_uses_relationship_governance",
+    "runtime_pause_and_block_are_distinct",
     "cross_boundary_disclosure_admission_derivation_separation",
     "consent_permission_intersection",
     "raw_execution_metadata_minimized",
@@ -50,6 +52,7 @@
     "fixtures/lifecycle_authority.json",
     "fixtures/purpose_bound_governance.json",
     "fixtures/time_conditions.json",
-    "fixtures/pure_governance_evaluation.json"
+    "fixtures/pure_governance_evaluation.json",
+    "fixtures/runtime_governance_consistency.json"
   ]
 }
