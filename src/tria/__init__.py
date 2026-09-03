@@ -1,8 +1,8 @@
 from .core import ClaimHandle, EpistemicAdmissionError, Relationship, Tria
-from .events import EventProposal, RelationalEvent
-from .governance import GovernanceEngine, Policy
+from .events import EventProposal, RelationalEvent, verify_event_chain
+from .governance import GovernanceEngine, Policy, PolicyAdoption
 from .state import RelationalState
-from .store import EventStore, InMemoryEventStore
+from .store import EventStore, InMemoryEventStore, SQLiteEventStore
 from .types import (
     Capability,
     Claim,
@@ -30,8 +30,11 @@ __all__ = [
     "InMemoryEventStore",
     "LifecycleState",
     "Policy",
+    "PolicyAdoption",
     "RelationalEvent",
     "RelationalState",
     "Relationship",
+    "SQLiteEventStore",
     "Tria",
+    "verify_event_chain",
 ]
