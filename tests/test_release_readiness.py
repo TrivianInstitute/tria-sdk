@@ -75,4 +75,11 @@ def test_completion_audit_exists_and_keeps_scope_bounded():
 def test_release_candidate_keeps_license_decision_explicit():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         project = tomllib.load(handle)["project"]
-    assert project["license"]["text"] == "AGPL-3.0-only"
+    assert project["license"]["text"] == "PolyForm-Noncommercial-1.0.0"
+    readme = (ROOT / "README.md").read_text()
+    license_text = (ROOT / "LICENSE.md").read_text()
+    assert "PolyForm Noncommercial License 1.0.0" in readme
+    assert "Commercial use is not permitted" in readme
+    assert "PolyForm Noncommercial License 1.0.0" in license_text
+    assert "Commercial use is not permitted" in license_text
+    assert "SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0" in license_text
