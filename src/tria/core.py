@@ -7,10 +7,14 @@ from .events import EventProposal, RelationalEvent, verify_event_chain
 from .governance import GovernanceEngine
 from .state import RelationalState, reduce_events
 from .store import EventStore, InMemoryEventStore
-from .types import Capability, EpistemicType, LifecycleState
+from .types import Capability, EpistemicType, GovernanceOutcome, LifecycleState
 
 
 class EpistemicAdmissionError(ValueError):
+    pass
+
+
+class PolicyAuthorityError(PermissionError):
     pass
 
 
@@ -60,10 +64,37 @@ class Relationship:
         self._commit("GovernanceEvaluated", "tria:governance", {"outcome": decision.outcome.value, "policy_id": decision.policy_id, "policy_version": decision.policy_version, "reason": decision.reason, "grantee": grantee, "resource": resource, "capability": capability.value})
         return decision
 
+    def grant_policy_authority(self, granted_by: str, authority_holder: str, authority_scope: str) -> RelationalEvent:
+        return self._commit("PolicyAuthorityGranted", granted_by, {"granted_by": granted_by, "authority_holder": authority_holder, "authority_scope": authority_scope})
+
+    def revoke_policy_authority(self, actor: str, authority_holder: str, authority_scope: str) -> RelationalEvent:
+        return self._commit("PolicyAuthorityRevoked", actor, {"authority_holder": authority_holder, "authority_scope": authority_scope})
+
+    def _require_policy_authority(self, actor: str, authority_scope: str) -> None:
+        decision = self._governance.require_policy_authority(self.state, actor, authority_scope)
+        self._commit("GovernanceEvaluated", "tria:governance", {"outcome": decision.outcome.value, "policy_id": decision.policy_id, "policy_version": decision.policy_version, "reason": decision.reason, "actor": actor, "authority_scope": authority_scope})
+        if decision.outcome is not GovernanceOutcome.ALLOW:
+            raise PolicyAuthorityError(decision.reason)
+
+    def register_policy(self, actor: str, policy_id: str, policy_version: str, authority_scope: str, *, provenance_refs: tuple[str, ...] = (), consent_impacting: bool = False) -> RelationalEvent:
+        self._require_policy_authority(actor, authority_scope)
+        return self._commit("PolicyRegistered", actor, {"policy_id": policy_id, "policy_version": policy_version, "authored_by": actor, "authority_scope": authority_scope, "provenance_refs": list(provenance_refs), "consent_impacting": consent_impacting})
+
+    def amend_policy(self, actor: str, policy_id: str, policy_version: str, authority_scope: str, *, supersedes_version: str, provenance_refs: tuple[str, ...] = (), consent_impacting: bool = False) -> RelationalEvent:
+        self._require_policy_authority(actor, authority_scope)
+        return self._commit("PolicyAmended", actor, {"policy_id": policy_id, "policy_version": policy_version, "authored_by": actor, "authority_scope": authority_scope, "provenance_refs": list(provenance_refs), "consent_impacting": consent_impacting, "supersedes_version": supersedes_version})
+
     def adopt_policy(self, actor: str, policy_id: str, policy_version: str, authority_scope: str) -> RelationalEvent:
+        self._require_policy_authority(actor, authority_scope)
+        if (policy_id, policy_version) not in self.state.policy_definitions:
+            raise ValueError(f"Policy {policy_id}@{policy_version} must be registered before adoption.")
         return self._commit("PolicyAdopted", actor, {"policy_id": policy_id, "policy_version": policy_version, "adopted_by": actor, "authority_scope": authority_scope})
 
     def revoke_policy(self, actor: str, policy_id: str, policy_version: str) -> RelationalEvent:
+        record = self.state.policy_adoptions.get((policy_id, policy_version))
+        if record is None:
+            raise ValueError(f"Policy {policy_id}@{policy_version} is not adopted.")
+        self._require_policy_authority(actor, record.authority_scope)
         return self._commit("PolicyRevoked", actor, {"policy_id": policy_id, "policy_version": policy_version})
 
     def check_policy_adoption(self, policy_id: str, policy_version: str):
@@ -94,33 +125,13 @@ class Relationship:
         return decision
 
     def record_invocation_proposed(self, request) -> RelationalEvent:
-        return self._commit("InvocationProposed", request.requested_by, {
-            "request_id": request.request_id,
-            "action": request.action,
-            "target": request.target,
-            "context_resources": list(request.context_resources),
-            "requirements": [
-                {"resource": item.resource, "capability": item.capability.value}
-                for item in request.requirements
-            ],
-            "metadata": dict(request.metadata),
-        })
+        return self._commit("InvocationProposed", request.requested_by, {"request_id": request.request_id, "action": request.action, "target": request.target, "context_resources": list(request.context_resources), "requirements": [{"resource": item.resource, "capability": item.capability.value} for item in request.requirements], "metadata": dict(request.metadata)})
 
     def record_invocation_resolution(self, actor: str, request_id: str, status: str, *, reason: str) -> RelationalEvent:
-        return self._commit("InvocationResolved", "tria:governance", {
-            "request_id": request_id,
-            "requested_by": actor,
-            "status": status,
-            "reason": reason,
-        })
+        return self._commit("InvocationResolved", "tria:governance", {"request_id": request_id, "requested_by": actor, "status": status, "reason": reason})
 
     def record_invocation_result(self, result) -> RelationalEvent:
-        return self._commit("InvocationResultRecorded", result.produced_by, {
-            "request_id": result.request_id,
-            "status": result.status,
-            "output_ref": result.output_ref,
-            "metadata": dict(result.metadata),
-        })
+        return self._commit("InvocationResultRecorded", result.produced_by, {"request_id": result.request_id, "status": result.status, "output_ref": result.output_ref, "metadata": dict(result.metadata)})
 
     def audit(self) -> dict:
         events = self.events
