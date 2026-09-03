@@ -91,6 +91,13 @@ class PermissionRecord:
 
 
 @dataclass(frozen=True, slots=True)
+class LifecycleAuthorityRecord:
+    authority_holder: str
+    granted_by: str
+    active: bool = True
+
+
+@dataclass(frozen=True, slots=True)
 class PolicyAuthorityRecord:
     authority_holder: str
     authority_scope: str
