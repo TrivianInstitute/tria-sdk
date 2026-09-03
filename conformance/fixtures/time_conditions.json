@@ -1,0 +1,13 @@
+{
+  "fixture": "time_conditions",
+  "version": "0.1",
+  "requirements": [
+    "Expired consent fails closed and requires renewed consent.",
+    "Expired permissions fail closed even when purpose otherwise matches.",
+    "Bound condition labels must be explicitly supplied as satisfied; TRIA does not infer them.",
+    "Missing any required condition fails closed.",
+    "Additional satisfied condition labels do not invalidate an otherwise authorized request.",
+    "Expiry timestamps must be timezone-aware.",
+    "Runtime evaluates lifecycle, consent, capability, purpose, expiry, and conditions before execution."
+  ]
+}

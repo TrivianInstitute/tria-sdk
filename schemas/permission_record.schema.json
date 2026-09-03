@@ -10,6 +10,8 @@
     "capability": {"enum": ["STORE", "READ", "DISCLOSE", "DERIVE", "ACT", "DELEGATE"]},
     "granted_by": {"type": "string"},
     "purpose": {"type": ["string", "null"]},
+    "expires_at": {"type": ["string", "null"], "format": "date-time"},
+    "conditions": {"type": "array", "items": {"type": "string"}},
     "policy_version": {"type": "string"},
     "active": {"type": "boolean"}
   },

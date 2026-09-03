@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
+from datetime import datetime
 from typing import Iterable
 
 from .compat import CURRENT_PROJECTION_VERSION
@@ -39,6 +40,10 @@ class RelationalState:
     projection_version: str = CURRENT_PROJECTION_VERSION
 
 
+def _optional_datetime(value: str | None) -> datetime | None:
+    return datetime.fromisoformat(value) if value else None
+
+
 def reduce_events(relationship_id: str, events: Iterable[RelationalEvent]) -> RelationalState:
     state = RelationalState(relationship_id=relationship_id)
     for event in events:
@@ -52,6 +57,8 @@ def reduce_events(relationship_id: str, events: Iterable[RelationalEvent]) -> Re
                 scope=p["scope"],
                 purpose=p.get("purpose"),
                 granted_at=event.committed_at,
+                expires_at=_optional_datetime(p.get("expires_at")),
+                conditions=tuple(p.get("conditions", ())),
                 policy_version=event.policy_version,
                 active=True,
             )
@@ -69,7 +76,17 @@ def reduce_events(relationship_id: str, events: Iterable[RelationalEvent]) -> Re
         elif event.event_type == "PermissionGranted":
             permissions = dict(state.permissions)
             capability = Capability(p["capability"])
-            record = PermissionRecord(grantee=p["grantee"], resource=p["resource"], capability=capability, granted_by=p["granted_by"], purpose=p.get("purpose"), policy_version=event.policy_version, active=True)
+            record = PermissionRecord(
+                grantee=p["grantee"],
+                resource=p["resource"],
+                capability=capability,
+                granted_by=p["granted_by"],
+                purpose=p.get("purpose"),
+                expires_at=_optional_datetime(p.get("expires_at")),
+                conditions=tuple(p.get("conditions", ())),
+                policy_version=event.policy_version,
+                active=True,
+            )
             permissions[(record.grantee, record.resource, capability)] = record
             state = replace(state, permissions=permissions, last_event_id=event.event_id)
         elif event.event_type == "PermissionRevoked":

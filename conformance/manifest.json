@@ -2,7 +2,7 @@
   "tria_core_spec": "0.1.1",
   "bundle_format_version": "0.1",
   "event_schema_version": "0.1",
-  "projection_version": "0.3",
+  "projection_version": "0.4",
   "required_semantics": [
     "immutable_events",
     "deterministic_replay",
@@ -14,6 +14,8 @@
     "scoped_consent",
     "capability_separation",
     "purpose_bound_consent_and_permissions",
+    "time_bounded_consent_and_permissions",
+    "explicit_authorization_conditions",
     "cross_boundary_disclosure_admission_derivation_separation",
     "consent_permission_intersection",
     "raw_execution_metadata_minimized",
@@ -44,6 +46,7 @@
     "fixtures/replay_import.json",
     "fixtures/cross_boundary_governance.json",
     "fixtures/lifecycle_authority.json",
-    "fixtures/purpose_bound_governance.json"
+    "fixtures/purpose_bound_governance.json",
+    "fixtures/time_conditions.json"
   ]
 }
