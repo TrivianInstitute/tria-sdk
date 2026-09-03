@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, is_dataclass
+from datetime import datetime
 from enum import Enum
 import hashlib
 import json
@@ -14,6 +15,8 @@ BUNDLE_FORMAT_VERSION = "0.1"
 
 
 def _portable(value: Any) -> Any:
+    if isinstance(value, datetime):
+        return value.isoformat()
     if isinstance(value, Enum):
         return value.value
     if is_dataclass(value):
@@ -48,7 +51,7 @@ def state_to_dict(state: RelationalState) -> dict[str, Any]:
 
 
 def _canonical_json(value: Any) -> str:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return json.dumps(_portable(value), sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
 
 def projection_digest(state: RelationalState) -> str:
@@ -77,7 +80,7 @@ class ReplayBundle:
         }
 
     def to_json(self, *, indent: int | None = 2) -> str:
-        return json.dumps(self.to_dict(), sort_keys=True, indent=indent, ensure_ascii=False)
+        return json.dumps(_portable(self.to_dict()), sort_keys=True, indent=indent, ensure_ascii=False)
 
 
 @dataclass(frozen=True, slots=True)
