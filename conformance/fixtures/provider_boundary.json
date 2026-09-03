@@ -1,0 +1,11 @@
+{
+  "fixture_version": "0.1",
+  "name": "provider-boundary",
+  "description": "A conforming adapter may translate only an authorized invocation plan and must not leak provider-specific objects into Core.",
+  "expect": {
+    "blocked_plan_rejected": true,
+    "authorized_context_only": true,
+    "provider_sdk_dependency_required": false,
+    "generic_result_normalization": true
+  }
+}
