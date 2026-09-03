@@ -1,0 +1,14 @@
+{
+  "fixture_version": "0.1",
+  "name": "lifecycle-authority",
+  "description": "Lifecycle state changes require explicit event-sourced lifecycle authority and must follow the allowed transition graph.",
+  "expect": {
+    "unauthorized_transition_rejected": true,
+    "authority_grant_event_sourced": true,
+    "authority_revocation_effective": true,
+    "illegal_transition_rejected": true,
+    "dissolved_terminal": true,
+    "consent_does_not_change_lifecycle": true,
+    "projection_version": "0.3"
+  }
+}
