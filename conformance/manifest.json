@@ -8,6 +8,8 @@
     "hash_chain_verification",
     "scoped_consent",
     "capability_separation",
+    "consent_permission_intersection",
+    "raw_execution_metadata_minimized",
     "explicit_delegation_authority",
     "ambiguous_permission_races_fail_closed",
     "policy_adoption",
@@ -23,6 +25,7 @@
     "fixtures/runtime_boundary.json",
     "fixtures/provider_boundary.json",
     "fixtures/execution_bridge.json",
-    "fixtures/delegation_races_v0.1.json"
+    "fixtures/delegation_races_v0.1.json",
+    "fixtures/consent_metadata_boundary.json"
   ]
 }
