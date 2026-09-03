@@ -218,3 +218,9 @@ class Tria:
 
     def load_relationship(self, relationship_id: str) -> Relationship:
         return Relationship(relationship_id, self.store)
+
+    def restore_relationship(self, bundle) -> Relationship:
+        from .portable import import_replay_bundle
+
+        relationship_id = import_replay_bundle(self.store, bundle)
+        return Relationship(relationship_id, self.store)

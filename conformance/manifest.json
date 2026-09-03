@@ -7,6 +7,7 @@
     "deterministic_replay",
     "hash_chain_verification",
     "portable_replay_bundle_verification",
+    "integrity_gated_replay_import",
     "scoped_consent",
     "capability_separation",
     "consent_permission_intersection",
@@ -31,6 +32,7 @@
     "fixtures/delegation_races_v0.1.json",
     "fixtures/consent_metadata_boundary.json",
     "fixtures/lifecycle_enforcement.json",
-    "fixtures/portable_replay_bundle.json"
+    "fixtures/portable_replay_bundle.json",
+    "fixtures/replay_import.json"
   ]
 }
