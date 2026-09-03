@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trivianinstitute.org/tria/schemas/relational_state.schema.json",
+  "title": "TRIA Relational State Projection",
+  "type": "object",
+  "required": ["relationship_id", "participants", "lifecycle", "projection_version"],
+  "properties": {
+    "relationship_id": {"type": "string", "minLength": 1},
+    "participants": {"type": "array", "items": {"type": "string"}},
+    "lifecycle": {"type": "string", "enum": ["FORMING", "ACTIVE", "RESTING", "DORMANT", "RENEWING", "TRANSFORMING", "DISSOLVING", "DISSOLVED"]},
+    "consent": {"type": "object"},
+    "permissions": {"type": "object"},
+    "policy_adoptions": {"type": "object"},
+    "claims": {"type": "object"},
+    "disagreements": {"type": "object"},
+    "last_event_id": {"type": ["string", "null"]},
+    "projection_version": {"type": "string", "minLength": 1}
+  },
+  "additionalProperties": false
+}
