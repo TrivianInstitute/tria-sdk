@@ -1,0 +1,16 @@
+{
+  "fixture_version": "0.1",
+  "name": "persistence-replay",
+  "description": "A conforming implementation must preserve relationship state across store restart and validate its event chain.",
+  "participants": ["human:a", "agent:b"],
+  "operations": [
+    {"type": "grant_consent", "actor": "human:a", "scope": "memory"},
+    {"type": "register_observation", "actor": "agent:b", "content": "Latency increased.", "source_refs": ["sensor:latency"]}
+  ],
+  "expect": {
+    "consent_active": true,
+    "claim_content": "Latency increased.",
+    "reconstructable": true,
+    "chain_valid": true
+  }
+}

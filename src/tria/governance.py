@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import datetime
 
 from .state import RelationalState
-from .types import GovernanceDecision, GovernanceOutcome
+from .types import GovernanceDecision, GovernanceOutcome, utcnow
 
 
 @dataclass(frozen=True, slots=True)
@@ -12,13 +13,24 @@ class Policy:
     version: str
     authored_by: str
     authority_scope: str
+    provenance_refs: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class PolicyAdoption:
+    policy_id: str
+    policy_version: str
+    adopted_by: str
+    authority_scope: str
+    adopted_at: datetime = field(default_factory=utcnow)
+    consent_required: bool = False
 
 
 class GovernanceEngine:
     """Deterministic v0.1 governance surface.
 
-    The engine intentionally contains only inspectable rules. Model-assisted
-    governance can be layered above this interface later.
+    Rules remain inspectable and versioned. Determinism does not establish
+    legitimacy; policy authorship, authority, and adoption remain attributable.
     """
 
     def require_active_consent(self, state: RelationalState, actor: str, scope: str) -> GovernanceDecision:
