@@ -25,6 +25,7 @@ from .types import (
     PermissionRecord,
     PolicyAdoptionRecord,
 )
+from .version import __version__
 
 __all__ = [
     "AnthropicMessagesAdapter",
@@ -65,5 +66,6 @@ __all__ = [
     "Runtime",
     "SQLiteEventStore",
     "Tria",
+    "__version__",
     "verify_event_chain",
 ]

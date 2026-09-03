@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "tria-core"
-version = "0.1.0a1"
-description = "Model-agnostic governance kernel for persistent mediated relationships."
+version = "0.1.0a2"
+description = "Model-agnostic governance kernel and runtime boundary for persistent mediated relationships."
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [{name = "Sarasha Elion"}]
@@ -20,7 +20,7 @@ classifiers = [
 dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0"]
+dev = ["pytest>=8.0", "build>=1.2"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/tria"]
