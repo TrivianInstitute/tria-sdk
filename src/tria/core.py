@@ -93,6 +93,35 @@ class Relationship:
         self._commit("GovernanceEvaluated", "tria:governance", {"outcome": decision.outcome.value, "policy_id": decision.policy_id, "policy_version": decision.policy_version, "reason": decision.reason, "actor": actor, "scope": scope})
         return decision
 
+    def record_invocation_proposed(self, request) -> RelationalEvent:
+        return self._commit("InvocationProposed", request.requested_by, {
+            "request_id": request.request_id,
+            "action": request.action,
+            "target": request.target,
+            "context_resources": list(request.context_resources),
+            "requirements": [
+                {"resource": item.resource, "capability": item.capability.value}
+                for item in request.requirements
+            ],
+            "metadata": dict(request.metadata),
+        })
+
+    def record_invocation_resolution(self, actor: str, request_id: str, status: str, *, reason: str) -> RelationalEvent:
+        return self._commit("InvocationResolved", "tria:governance", {
+            "request_id": request_id,
+            "requested_by": actor,
+            "status": status,
+            "reason": reason,
+        })
+
+    def record_invocation_result(self, result) -> RelationalEvent:
+        return self._commit("InvocationResultRecorded", result.produced_by, {
+            "request_id": result.request_id,
+            "status": result.status,
+            "output_ref": result.output_ref,
+            "metadata": dict(result.metadata),
+        })
+
     def audit(self) -> dict:
         events = self.events
         last_event_id = events[-1].event_id if events else None
