@@ -7,12 +7,18 @@ import hashlib
 import json
 from typing import Any
 
-from .compat import CURRENT_EVENT_SCHEMA_VERSION, CURRENT_PROJECTION_VERSION
+from .compat import (
+    CURRENT_BUNDLE_FORMAT_VERSION,
+    CURRENT_EVENT_SCHEMA_VERSION,
+    CURRENT_PROJECTION_VERSION,
+    SchemaCompatibilityError,
+    require_supported_compatibility,
+)
 from .events import RelationalEvent, verify_event_chain
 from .state import RelationalState, reduce_events
 from .store import EventStore
 
-BUNDLE_FORMAT_VERSION = "0.1"
+BUNDLE_FORMAT_VERSION = CURRENT_BUNDLE_FORMAT_VERSION
 
 
 class ReplayImportError(ValueError):
@@ -115,10 +121,32 @@ def export_replay_bundle(relationship) -> ReplayBundle:
 
 def verify_replay_bundle(bundle: ReplayBundle | dict[str, Any]) -> BundleVerification:
     data = bundle.to_dict() if isinstance(bundle, ReplayBundle) else dict(bundle)
+    event_count = len(data.get("events", ()))
+
+    try:
+        require_supported_compatibility(
+            str(data.get("event_schema_version", "")),
+            projection_version=str(data.get("projection_version", "")),
+            bundle_format_version=str(data.get("format_version", "")),
+        )
+    except SchemaCompatibilityError as exc:
+        return BundleVerification(False, False, False, False, event_count, str(exc))
+
     try:
         events = [RelationalEvent.from_dict(item) for item in data.get("events", [])]
     except (KeyError, TypeError, ValueError) as exc:
         return BundleVerification(False, False, False, False, 0, f"Invalid event payload: {exc}")
+
+    envelope_schema = data["event_schema_version"]
+    if any(event.schema_version != envelope_schema for event in events):
+        return BundleVerification(
+            False,
+            False,
+            False,
+            False,
+            len(events),
+            "Bundle event schema envelope does not match every contained event.",
+        )
 
     relationship_id = data.get("relationship_id")
     relationship_valid = bool(relationship_id) and all(event.relationship_id == relationship_id for event in events)
