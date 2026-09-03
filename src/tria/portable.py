@@ -10,8 +10,13 @@ from typing import Any
 from .compat import CURRENT_EVENT_SCHEMA_VERSION, CURRENT_PROJECTION_VERSION
 from .events import RelationalEvent, verify_event_chain
 from .state import RelationalState, reduce_events
+from .store import EventStore
 
 BUNDLE_FORMAT_VERSION = "0.1"
+
+
+class ReplayImportError(ValueError):
+    pass
 
 
 def _portable(value: Any) -> Any:
@@ -138,3 +143,31 @@ def verify_replay_bundle(bundle: ReplayBundle | dict[str, Any]) -> BundleVerific
         len(events),
         "" if projection_valid else "Projection does not match deterministic replay.",
     )
+
+
+def import_replay_bundle(store: EventStore, bundle: ReplayBundle | dict[str, Any]) -> str:
+    """Restore a verified portable history into an empty relationship slot.
+
+    Import preserves the original immutable events exactly. It never re-commits,
+    re-times, or re-identifies them. Existing history for the same relationship
+    causes the import to fail closed rather than merge two event streams.
+    """
+    data = bundle.to_dict() if isinstance(bundle, ReplayBundle) else dict(bundle)
+    verification = verify_replay_bundle(data)
+    if not verification.valid:
+        raise ReplayImportError(verification.reason or "Replay bundle verification failed.")
+
+    relationship_id = data["relationship_id"]
+    if store.list(relationship_id):
+        raise ReplayImportError(f"Relationship {relationship_id!r} already has persisted events; import requires an empty destination.")
+
+    try:
+        events = [RelationalEvent.from_dict(item) for item in data["events"]]
+        store.append_many(events)
+    except Exception as exc:
+        raise ReplayImportError(f"Replay bundle import failed: {exc}") from exc
+
+    restored = store.list(relationship_id)
+    if not verify_event_chain(restored) or len(restored) != len(events):
+        raise ReplayImportError("Imported event history failed post-write integrity verification.")
+    return relationship_id
