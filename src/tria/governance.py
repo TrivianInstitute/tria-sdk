@@ -30,21 +30,31 @@ class PolicyAdoption:
 class GovernanceEngine:
     """Deterministic, inspectable governance rules."""
 
-    def require_active_consent(self, state: RelationalState, actor: str, scope: str) -> GovernanceDecision:
+    @staticmethod
+    def _purpose_matches(bound_purpose: str | None, requested_purpose: str | None) -> bool:
+        if bound_purpose is None:
+            return True
+        return requested_purpose == bound_purpose
+
+    def require_active_consent(self, state: RelationalState, actor: str, scope: str, purpose: str | None = None) -> GovernanceDecision:
         if (actor, scope) in state.reconsent_requirements:
             return GovernanceDecision(GovernanceOutcome.REQUIRE_CONSENT, "core.consent.reconsent", "0.1", f"Renewed consent is required for {actor!r} scope {scope!r} after a consent-impacting policy change.")
         record = state.consent.get((actor, scope))
         if record and record.active:
-            return GovernanceDecision(GovernanceOutcome.ALLOW, "core.consent.active", "0.1", f"Active consent exists for {actor!r} scope {scope!r}.")
+            if not self._purpose_matches(record.purpose, purpose):
+                return GovernanceDecision(GovernanceOutcome.REQUIRE_CONSENT, "core.consent.purpose", "0.1", f"Active consent for {actor!r} scope {scope!r} is bound to purpose {record.purpose!r}; requested purpose {purpose!r} is not authorized.")
+            return GovernanceDecision(GovernanceOutcome.ALLOW, "core.consent.active", "0.1", f"Active consent exists for {actor!r} scope {scope!r} and requested purpose.")
         return GovernanceDecision(GovernanceOutcome.REQUIRE_CONSENT, "core.consent.active", "0.1", f"No active consent exists for {actor!r} scope {scope!r}.")
 
-    def require_capability(self, state: RelationalState, grantee: str, resource: str, capability: Capability) -> GovernanceDecision:
+    def require_capability(self, state: RelationalState, grantee: str, resource: str, capability: Capability, purpose: str | None = None) -> GovernanceDecision:
         lifecycle = self.require_lifecycle_capability(state, capability)
         if lifecycle.outcome is not GovernanceOutcome.ALLOW:
             return lifecycle
         record = state.permissions.get((grantee, resource, capability))
         if record and record.active:
-            return GovernanceDecision(GovernanceOutcome.ALLOW, "core.permission.active", "0.1", f"{grantee!r} has active {capability.value} permission for {resource!r}.")
+            if not self._purpose_matches(record.purpose, purpose):
+                return GovernanceDecision(GovernanceOutcome.BLOCK, "core.permission.purpose", "0.1", f"{grantee!r} has {capability.value} permission for {resource!r}, but it is bound to purpose {record.purpose!r}; requested purpose {purpose!r} is not authorized.")
+            return GovernanceDecision(GovernanceOutcome.ALLOW, "core.permission.active", "0.1", f"{grantee!r} has active {capability.value} permission for {resource!r} and requested purpose.")
         return GovernanceDecision(GovernanceOutcome.BLOCK, "core.permission.active", "0.1", f"No active {capability.value} permission exists for {grantee!r} on {resource!r}.")
 
     def require_lifecycle_capability(self, state: RelationalState, capability: Capability) -> GovernanceDecision:
