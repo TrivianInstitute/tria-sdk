@@ -18,7 +18,7 @@ from .providers import (
     ProviderResponse,
     ProviderTranslationError,
 )
-from .runtime import CapabilityRequirement, ContextItem, InvocationPlan, InvocationRequest, InvocationResult, Runtime
+from .runtime import CapabilityRequirement, ConsentRequirement, ContextItem, InvocationPlan, InvocationRequest, InvocationResult, Runtime
 from .state import RelationalState
 from .store import EventStore, InMemoryEventStore, SQLiteEventStore
 from .types import (
@@ -40,7 +40,7 @@ from .version import __version__
 
 __all__ = [
     "AnthropicMessagesAdapter", "Capability", "CapabilityRequirement", "Claim", "ClaimHandle", "ClaimStatus",
-    "CompatibilityReport", "ConsentRecord", "ContextItem", "CURRENT_EVENT_SCHEMA_VERSION", "CURRENT_PROJECTION_VERSION",
+    "CompatibilityReport", "ConsentRecord", "ConsentRequirement", "ContextItem", "CURRENT_EVENT_SCHEMA_VERSION", "CURRENT_PROJECTION_VERSION",
     "DelegationError", "EpistemicAdmissionError", "EpistemicType", "EventProposal", "EventStore", "ExecutionBridge", "ExecutionReceipt",
     "Executor", "GovernanceDecision", "GovernanceEngine", "GovernanceOutcome", "InMemoryEventStore", "InvocationPlan",
     "InvocationRequest", "InvocationResult", "LifecycleState", "OpenAIResponsesAdapter", "PermissionRecord", "Policy",
