@@ -5,6 +5,7 @@
   "projection_version": "0.4",
   "required_semantics": [
     "immutable_events",
+    "deep_immutable_public_values",
     "deterministic_replay",
     "hash_chain_verification",
     "portable_replay_bundle_verification",
@@ -56,6 +57,7 @@
     "fixtures/purpose_bound_governance.json",
     "fixtures/time_conditions.json",
     "fixtures/pure_governance_evaluation.json",
-    "fixtures/runtime_governance_consistency.json"
+    "fixtures/runtime_governance_consistency.json",
+    "fixtures/deep_immutability.json"
   ]
 }
