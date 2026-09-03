@@ -1,3 +1,10 @@
+from .boundary import (
+    CrossBoundaryGovernanceError,
+    DisclosureHandle,
+    admit_disclosure,
+    derive_from_disclosure,
+    disclose_reference,
+)
 from .compat import (
     CURRENT_BUNDLE_FORMAT_VERSION,
     CURRENT_EVENT_SCHEMA_VERSION,
@@ -55,13 +62,15 @@ from .version import __version__
 __all__ = [
     "AnthropicMessagesAdapter", "BUNDLE_FORMAT_VERSION", "BundleVerification", "Capability", "CapabilityRequirement",
     "Claim", "ClaimHandle", "ClaimStatus", "CompatibilityReport", "ConsentRecord", "ConsentRequirement", "ContextItem",
-    "CURRENT_BUNDLE_FORMAT_VERSION", "CURRENT_EVENT_SCHEMA_VERSION", "CURRENT_PROJECTION_VERSION", "DelegationError", "EpistemicAdmissionError",
-    "EpistemicType", "EventProposal", "EventStore", "ExecutionBridge", "ExecutionReceipt", "Executor",
-    "GovernanceDecision", "GovernanceEngine", "GovernanceOutcome", "InMemoryEventStore", "InvocationPlan",
-    "InvocationRequest", "InvocationResult", "LifecycleState", "OpenAIResponsesAdapter", "PermissionRecord", "Policy",
-    "PolicyAdoption", "PolicyAdoptionRecord", "PolicyAuthorityError", "PolicyAuthorityRecord", "PolicyDefinitionRecord",
-    "ProviderAdapter", "ProviderRequest", "ProviderResponse", "ProviderTranslationError", "ReconsentRequirement",
-    "RelationalEvent", "RelationalState", "Relationship", "ReplayBundle", "ReplayImportError", "Runtime", "SQLiteEventStore",
-    "SchemaCompatibilityError", "Tria", "__version__", "check_compatibility", "check_event_schema", "export_replay_bundle", "import_replay_bundle",
-    "projection_digest", "require_supported_compatibility", "require_supported_event_schema", "state_to_dict", "verify_event_chain", "verify_replay_bundle",
+    "CrossBoundaryGovernanceError", "CURRENT_BUNDLE_FORMAT_VERSION", "CURRENT_EVENT_SCHEMA_VERSION", "CURRENT_PROJECTION_VERSION",
+    "DelegationError", "DisclosureHandle", "EpistemicAdmissionError", "EpistemicType", "EventProposal", "EventStore",
+    "ExecutionBridge", "ExecutionReceipt", "Executor", "GovernanceDecision", "GovernanceEngine", "GovernanceOutcome",
+    "InMemoryEventStore", "InvocationPlan", "InvocationRequest", "InvocationResult", "LifecycleState", "OpenAIResponsesAdapter",
+    "PermissionRecord", "Policy", "PolicyAdoption", "PolicyAdoptionRecord", "PolicyAuthorityError", "PolicyAuthorityRecord",
+    "PolicyDefinitionRecord", "ProviderAdapter", "ProviderRequest", "ProviderResponse", "ProviderTranslationError",
+    "ReconsentRequirement", "RelationalEvent", "RelationalState", "Relationship", "ReplayBundle", "ReplayImportError",
+    "Runtime", "SQLiteEventStore", "SchemaCompatibilityError", "Tria", "__version__", "admit_disclosure",
+    "check_compatibility", "check_event_schema", "derive_from_disclosure", "disclose_reference", "export_replay_bundle",
+    "import_replay_bundle", "projection_digest", "require_supported_compatibility", "require_supported_event_schema",
+    "state_to_dict", "verify_event_chain", "verify_replay_bundle",
 ]
