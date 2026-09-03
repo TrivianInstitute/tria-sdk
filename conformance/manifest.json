@@ -1,0 +1,25 @@
+{
+  "tria_core_spec": "0.1.1",
+  "event_schema_version": "0.1",
+  "projection_version": "0.2",
+  "required_semantics": [
+    "immutable_events",
+    "deterministic_replay",
+    "hash_chain_verification",
+    "scoped_consent",
+    "capability_separation",
+    "policy_adoption",
+    "epistemic_provenance",
+    "preserved_disagreement",
+    "governed_runtime_context",
+    "blocked_execution_does_not_reach_transport",
+    "unsupported_event_schema_fails_closed"
+  ],
+  "fixtures": [
+    "fixtures/replay.json",
+    "fixtures/governed_access.json",
+    "fixtures/runtime_boundary.json",
+    "fixtures/provider_boundary.json",
+    "fixtures/execution_bridge.json"
+  ]
+}
