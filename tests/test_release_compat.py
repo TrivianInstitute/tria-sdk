@@ -4,10 +4,12 @@ from tria import (
     CURRENT_BUNDLE_FORMAT_VERSION,
     CURRENT_EVENT_SCHEMA_VERSION,
     CURRENT_PROJECTION_VERSION,
+    Capability,
     EpistemicType,
     Tria,
     check_compatibility,
     export_replay_bundle,
+    replay_export_resource,
     verify_replay_bundle,
 )
 
@@ -15,7 +17,13 @@ from tria import (
 def _bundle_dict():
     rel = Tria().create_relationship(["human:a", "agent:b"])
     rel.register_claim("human:a", EpistemicType.OBSERVATION, "Observed fact", source_refs=["source:1"])
-    return export_replay_bundle(rel).to_dict()
+    rel.grant_permission(
+        "human:a",
+        "human:a",
+        replay_export_resource(rel.relationship_id),
+        Capability.DISCLOSE,
+    )
+    return export_replay_bundle(rel, actor="human:a").to_dict()
 
 
 def test_current_compatibility_surface_is_supported():
