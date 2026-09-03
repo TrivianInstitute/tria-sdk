@@ -13,6 +13,7 @@
     "bundle_event_schema_envelope_matches_contents",
     "scoped_consent",
     "capability_separation",
+    "purpose_bound_consent_and_permissions",
     "cross_boundary_disclosure_admission_derivation_separation",
     "consent_permission_intersection",
     "raw_execution_metadata_minimized",
@@ -42,6 +43,7 @@
     "fixtures/portable_replay_bundle.json",
     "fixtures/replay_import.json",
     "fixtures/cross_boundary_governance.json",
-    "fixtures/lifecycle_authority.json"
+    "fixtures/lifecycle_authority.json",
+    "fixtures/purpose_bound_governance.json"
   ]
 }

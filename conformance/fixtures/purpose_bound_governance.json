@@ -1,0 +1,13 @@
+{
+  "fixture_version": "0.1",
+  "name": "purpose-bound-governance",
+  "description": "Purpose-bound consent and permissions fail closed when a request declares a different or missing purpose, while unbound records remain general.",
+  "expect": {
+    "bound_consent_requires_exact_purpose": true,
+    "bound_permission_requires_exact_purpose": true,
+    "missing_requested_purpose_does_not_bypass_bound_record": true,
+    "unbound_record_remains_general": true,
+    "runtime_carries_explicit_purpose": true,
+    "purpose_is_not_inferred_from_action_text": true
+  }
+}

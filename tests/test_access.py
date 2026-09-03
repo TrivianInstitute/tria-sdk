@@ -18,7 +18,7 @@ def test_derivation_requires_explicit_permission():
     assert rel.check_capability("agent:b", "claim:private", Capability.DERIVE).outcome is GovernanceOutcome.BLOCK
 
     rel.grant_permission("human:a", "agent:b", "claim:private", Capability.DERIVE, purpose="reasoning")
-    assert rel.check_capability("agent:b", "claim:private", Capability.DERIVE).outcome is GovernanceOutcome.ALLOW
+    assert rel.check_capability("agent:b", "claim:private", Capability.DERIVE, purpose="reasoning").outcome is GovernanceOutcome.ALLOW
 
 
 def test_revoked_permission_fails_closed():
