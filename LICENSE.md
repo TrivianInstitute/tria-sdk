@@ -1,10 +1,19 @@
-# GNU Affero General Public License v3.0
+# TRIA SDK License
 
-TRIA SDK is licensed under the **GNU Affero General Public License v3.0 only (AGPL-3.0-only)**.
+Copyright © 2026 Trivian Institute.
 
-Copyright © 2026 Sarasha Elion / Trivian Institute.
+TRIA SDK is made available for noncommercial use under the **PolyForm Noncommercial License 1.0.0**.
 
-The full license terms are available from the Free Software Foundation at:
-https://www.gnu.org/licenses/agpl-3.0.html
+The controlling license terms are published by the PolyForm Project at:
 
-SPDX-License-Identifier: AGPL-3.0-only
+https://polyformproject.org/licenses/noncommercial/1.0.0/
+
+Under those terms, noncommercial purposes are permitted, including qualifying personal research, experiment, testing, study, educational use, and use by qualifying noncommercial organizations.
+
+**Commercial use is not permitted under this license.** Any commercial use, commercial deployment, incorporation into a commercial product or service, or use on behalf of a for-profit business requires a separate written commercial license from **Trivian Institute**.
+
+For commercial licensing inquiries, contact Trivian Institute through its official channels.
+
+Required Notice: Copyright © 2026 Trivian Institute.
+
+SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
