@@ -45,7 +45,14 @@ def reduce_events(relationship_id: str, events: Iterable[RelationalEvent]) -> Re
             state = replace(state, participants=tuple(p["participants"]), lifecycle=LifecycleState.FORMING, last_event_id=event.event_id)
         elif event.event_type == "ConsentGranted":
             consent = dict(state.consent)
-            record = ConsentRecord(actor=p["actor"], scope=p["scope"], purpose=p.get("purpose"), policy_version=event.policy_version, active=True)
+            record = ConsentRecord(
+                actor=p["actor"],
+                scope=p["scope"],
+                purpose=p.get("purpose"),
+                granted_at=event.committed_at,
+                policy_version=event.policy_version,
+                active=True,
+            )
             consent[(record.actor, record.scope)] = record
             reconsent = dict(state.reconsent_requirements)
             reconsent.pop((record.actor, record.scope), None)
@@ -110,7 +117,15 @@ def reduce_events(relationship_id: str, events: Iterable[RelationalEvent]) -> Re
             state = replace(state, policy_adoptions=adoptions, last_event_id=event.event_id)
         elif event.event_type == "ClaimRegistered":
             claims = dict(state.claims)
-            claim = Claim(claim_id=p["claim_id"], actor=p["actor"], content=p["content"], epistemic_type=EpistemicType(p["epistemic_type"]), derived_from=tuple(p.get("derived_from", ())), source_refs=tuple(p.get("source_refs", ())))
+            claim = Claim(
+                claim_id=p["claim_id"],
+                actor=p["actor"],
+                content=p["content"],
+                epistemic_type=EpistemicType(p["epistemic_type"]),
+                derived_from=tuple(p.get("derived_from", ())),
+                source_refs=tuple(p.get("source_refs", ())),
+                created_at=event.committed_at,
+            )
             claims[claim.claim_id] = claim
             state = replace(state, claims=claims, last_event_id=event.event_id)
         elif event.event_type == "ClaimDisputed":
