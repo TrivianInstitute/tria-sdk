@@ -14,6 +14,7 @@ class Policy:
     authored_by: str
     authority_scope: str
     provenance_refs: tuple[str, ...] = ()
+    consent_impacting: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -30,6 +31,8 @@ class GovernanceEngine:
     """Deterministic, inspectable governance rules."""
 
     def require_active_consent(self, state: RelationalState, actor: str, scope: str) -> GovernanceDecision:
+        if (actor, scope) in state.reconsent_requirements:
+            return GovernanceDecision(GovernanceOutcome.REQUIRE_CONSENT, "core.consent.reconsent", "0.1", f"Renewed consent is required for {actor!r} scope {scope!r} after a consent-impacting policy change.")
         record = state.consent.get((actor, scope))
         if record and record.active:
             return GovernanceDecision(GovernanceOutcome.ALLOW, "core.consent.active", "0.1", f"Active consent exists for {actor!r} scope {scope!r}.")
@@ -40,6 +43,12 @@ class GovernanceEngine:
         if record and record.active:
             return GovernanceDecision(GovernanceOutcome.ALLOW, "core.permission.active", "0.1", f"{grantee!r} has active {capability.value} permission for {resource!r}.")
         return GovernanceDecision(GovernanceOutcome.BLOCK, "core.permission.active", "0.1", f"No active {capability.value} permission exists for {grantee!r} on {resource!r}.")
+
+    def require_policy_authority(self, state: RelationalState, actor: str, authority_scope: str) -> GovernanceDecision:
+        record = state.policy_authorities.get((actor, authority_scope))
+        if record and record.active:
+            return GovernanceDecision(GovernanceOutcome.ALLOW, "core.policy.authority", "0.1", f"{actor!r} has active policy authority for {authority_scope!r}.")
+        return GovernanceDecision(GovernanceOutcome.BLOCK, "core.policy.authority", "0.1", f"{actor!r} lacks active policy authority for {authority_scope!r}.")
 
     def require_policy_adoption(self, state: RelationalState, policy_id: str, policy_version: str) -> GovernanceDecision:
         record = state.policy_adoptions.get((policy_id, policy_version))
