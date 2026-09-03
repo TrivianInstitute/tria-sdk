@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any
 from uuid import uuid4
 
 from .core import Relationship
+from .immutability import deep_freeze
 from .types import Capability, GovernanceDecision, GovernanceOutcome
 
 
@@ -15,6 +17,9 @@ class CapabilityRequirement:
     purpose: str | None = None
     satisfied_conditions: tuple[str, ...] = ()
 
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "satisfied_conditions", tuple(self.satisfied_conditions))
+
 
 @dataclass(frozen=True, slots=True)
 class ConsentRequirement:
@@ -22,6 +27,9 @@ class ConsentRequirement:
     scope: str
     purpose: str | None = None
     satisfied_conditions: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "satisfied_conditions", tuple(self.satisfied_conditions))
 
 
 @dataclass(frozen=True, slots=True)
@@ -33,8 +41,14 @@ class InvocationRequest:
     requirements: tuple[CapabilityRequirement, ...] = ()
     consent_requirements: tuple[ConsentRequirement, ...] = ()
     request_id: str = field(default_factory=lambda: str(uuid4()))
-    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata: Mapping[str, Any] = field(default_factory=dict)
     action_ref: str | None = None
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "context_resources", tuple(self.context_resources))
+        object.__setattr__(self, "requirements", tuple(self.requirements))
+        object.__setattr__(self, "consent_requirements", tuple(self.consent_requirements))
+        object.__setattr__(self, "metadata", deep_freeze(self.metadata))
 
 
 @dataclass(frozen=True, slots=True)
@@ -44,6 +58,10 @@ class ContextItem:
     epistemic_type: str | None = None
     provenance: tuple[str, ...] = ()
 
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "value", deep_freeze(self.value))
+        object.__setattr__(self, "provenance", tuple(self.provenance))
+
 
 @dataclass(frozen=True, slots=True)
 class InvocationPlan:
@@ -52,6 +70,10 @@ class InvocationPlan:
     decisions: tuple[GovernanceDecision, ...]
     context: tuple[ContextItem, ...] = ()
     reason: str = ""
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "decisions", tuple(self.decisions))
+        object.__setattr__(self, "context", tuple(self.context))
 
     @property
     def allowed(self) -> bool:
@@ -64,7 +86,10 @@ class InvocationResult:
     produced_by: str
     status: str
     output_ref: str | None = None
-    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "metadata", deep_freeze(self.metadata))
 
 
 class Runtime:
@@ -80,8 +105,6 @@ class Runtime:
         relationship.record_invocation_proposed(request)
         decisions: list[GovernanceDecision] = []
 
-        # Runtime must use the governance engine attached to the relationship.
-        # Creating a new engine here would bypass caller-supplied governance behavior.
         lifecycle_decision = relationship._governance.require_runtime_execution(relationship.state)
         decisions.append(lifecycle_decision)
         relationship.record_governance_decision(
