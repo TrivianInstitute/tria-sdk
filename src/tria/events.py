@@ -4,12 +4,18 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 import hashlib
 import json
-from typing import Any
+from typing import Any, Iterable
 from uuid import uuid4
 
 
 def _canonical_json(data: dict[str, Any]) -> str:
     return json.dumps(data, sort_keys=True, separators=(",", ":"), default=str)
+
+
+def _parse_datetime(value: str | datetime | None) -> datetime | None:
+    if value is None or isinstance(value, datetime):
+        return value
+    return datetime.fromisoformat(value)
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,3 +73,39 @@ class RelationalEvent:
         expected = material.pop("event_hash")
         digest = hashlib.sha256(_canonical_json(material).encode("utf-8")).hexdigest()
         return digest == expected
+
+    def to_dict(self) -> dict[str, Any]:
+        data = asdict(self)
+        data["causal_parents"] = list(self.causal_parents)
+        data["observed_at"] = self.observed_at.isoformat() if self.observed_at else None
+        data["committed_at"] = self.committed_at.isoformat()
+        return data
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "RelationalEvent":
+        return cls(
+            event_id=data["event_id"],
+            relationship_id=data["relationship_id"],
+            event_type=data["event_type"],
+            actor_id=data["actor_id"],
+            actor_sequence=int(data["actor_sequence"]),
+            causal_parents=tuple(data.get("causal_parents", ())),
+            observed_at=_parse_datetime(data.get("observed_at")),
+            committed_at=_parse_datetime(data["committed_at"]),
+            payload=dict(data.get("payload", {})),
+            schema_version=data.get("schema_version", "0.1"),
+            policy_version=data.get("policy_version", "0.1"),
+            previous_event_hash=data.get("previous_event_hash"),
+            event_hash=data["event_hash"],
+        )
+
+
+def verify_event_chain(events: Iterable[RelationalEvent]) -> bool:
+    previous_hash: str | None = None
+    for event in events:
+        if not event.verify_hash():
+            return False
+        if event.previous_event_hash != previous_hash:
+            return False
+        previous_hash = event.event_hash
+    return True
