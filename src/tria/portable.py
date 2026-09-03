@@ -48,6 +48,7 @@ def state_to_dict(state: RelationalState) -> dict[str, Any]:
         "lifecycle": state.lifecycle.value,
         "consent": [_portable(record) for _, record in sorted(state.consent.items(), key=lambda item: str(item[0]))],
         "permissions": [_portable(record) for _, record in sorted(state.permissions.items(), key=lambda item: str(item[0]))],
+        "lifecycle_authorities": [_portable(record) for _, record in sorted(state.lifecycle_authorities.items())],
         "policy_authorities": [_portable(record) for _, record in sorted(state.policy_authorities.items(), key=lambda item: str(item[0]))],
         "policy_definitions": [_portable(record) for _, record in sorted(state.policy_definitions.items(), key=lambda item: str(item[0]))],
         "policy_adoptions": [_portable(record) for _, record in sorted(state.policy_adoptions.items(), key=lambda item: str(item[0]))],
@@ -139,14 +140,7 @@ def verify_replay_bundle(bundle: ReplayBundle | dict[str, Any]) -> BundleVerific
 
     envelope_schema = data["event_schema_version"]
     if any(event.schema_version != envelope_schema for event in events):
-        return BundleVerification(
-            False,
-            False,
-            False,
-            False,
-            len(events),
-            "Bundle event schema envelope does not match every contained event.",
-        )
+        return BundleVerification(False, False, False, False, len(events), "Bundle event schema envelope does not match every contained event.")
 
     relationship_id = data.get("relationship_id")
     relationship_valid = bool(relationship_id) and all(event.relationship_id == relationship_id for event in events)
@@ -163,23 +157,11 @@ def verify_replay_bundle(bundle: ReplayBundle | dict[str, Any]) -> BundleVerific
         and data.get("projection_sha256") == expected_digest
         and data.get("projection_version") == state.projection_version
     )
-    return BundleVerification(
-        projection_valid,
-        chain_valid,
-        relationship_valid,
-        projection_valid,
-        len(events),
-        "" if projection_valid else "Projection does not match deterministic replay.",
-    )
+    return BundleVerification(projection_valid, chain_valid, relationship_valid, projection_valid, len(events), "" if projection_valid else "Projection does not match deterministic replay.")
 
 
 def import_replay_bundle(store: EventStore, bundle: ReplayBundle | dict[str, Any]) -> str:
-    """Restore a verified portable history into an empty relationship slot.
-
-    Import preserves the original immutable events exactly. It never re-commits,
-    re-times, or re-identifies them. Existing history for the same relationship
-    causes the import to fail closed rather than merge two event streams.
-    """
+    """Restore a verified portable history into an empty relationship slot."""
     data = bundle.to_dict() if isinstance(bundle, ReplayBundle) else dict(bundle)
     verification = verify_replay_bundle(data)
     if not verification.valid:
