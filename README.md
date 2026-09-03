@@ -147,3 +147,11 @@ The current alpha compatibility envelope is:
 `0.1.0a3` is an experimental alpha intended for falsification, integration testing, interoperability testing, and architectural hardening. Passing tests establish encoded behavior only, not scientific validation, legitimate consent, legal compliance, or deployment safety.
 
 The canonical architectural baseline is in [`docs/TRIA_CORE_SPEC_v0.1.1.md`](docs/TRIA_CORE_SPEC_v0.1.1.md). The current implementation-completion audit is in [`docs/TRIA_V0.1_COMPLETION_AUDIT.md`](docs/TRIA_V0.1_COMPLETION_AUDIT.md).
+
+---
+
+## License
+
+TRIA SDK is licensed under the **GNU Affero General Public License v3.0 only (AGPL-3.0-only)**. See [`LICENSE.md`](LICENSE.md).
+
+Copyright © 2026 Sarasha Elion / Trivian Institute.
