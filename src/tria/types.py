@@ -86,6 +86,8 @@ class PermissionRecord:
     capability: Capability
     granted_by: str
     purpose: str | None = None
+    expires_at: datetime | None = None
+    conditions: tuple[str, ...] = ()
     policy_version: str = "0.1"
     active: bool = True
 
