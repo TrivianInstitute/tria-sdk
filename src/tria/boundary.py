@@ -85,10 +85,10 @@ def _verified_source_event(source, disclosure: DisclosureHandle):
 def admit_disclosure(target, source, disclosure: DisclosureHandle, *, actor: str):
     """Explicitly admit a verified disclosure into another Relationship boundary.
 
-    Admission records provenance but grants no READ, DERIVE, ACT, or DELEGATE
-    capability. Those authorities remain separate governed decisions.
+    Admission requires STORE authority on the incoming disclosure resource. It
+    records provenance but grants no READ, DERIVE, ACT, or DELEGATE capability.
     """
-    source_event = _verified_source_event(source, disclosure)
+    _verified_source_event(source, disclosure)
     if target.relationship_id != disclosure.target_relationship_id:
         raise CrossBoundaryGovernanceError("Disclosure target relationship does not match the receiving relationship.")
     if any(
@@ -96,6 +96,10 @@ def admit_disclosure(target, source, disclosure: DisclosureHandle, *, actor: str
         for event in target.events
     ):
         raise CrossBoundaryGovernanceError("Disclosure has already been admitted into this relationship.")
+
+    decision = target.check_capability(actor, disclosure.admitted_resource, Capability.STORE)
+    if decision.outcome is not GovernanceOutcome.ALLOW:
+        raise CrossBoundaryGovernanceError(decision.reason)
 
     return target._commit(
         "ReferenceAdmitted",
@@ -110,7 +114,6 @@ def admit_disclosure(target, source, disclosure: DisclosureHandle, *, actor: str
             "admitted_resource": disclosure.admitted_resource,
             "admitted_by": actor,
         },
-        causal_parents=(),
     )
 
 
