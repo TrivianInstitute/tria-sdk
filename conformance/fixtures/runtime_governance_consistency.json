@@ -1,0 +1,10 @@
+{
+  "name": "runtime-governance-consistency",
+  "version": "0.1",
+  "assertions": [
+    "runtime lifecycle evaluation uses the governance engine attached to the relationship",
+    "a PAUSE lifecycle outcome records invocation status PAUSED",
+    "a BLOCK lifecycle outcome records invocation status BLOCKED",
+    "runtime governance decisions remain auditable relational events"
+  ]
+}
