@@ -1,0 +1,12 @@
+{
+  "fixture": "governed_replay_export",
+  "version": "0.1",
+  "requirements": [
+    "Full replay-bundle export requires active DISCLOSE authority on the relationship aggregate resource.",
+    "READ authority does not substitute for DISCLOSE authority.",
+    "Purpose, expiry, conditions, lifecycle restrictions, revocation, and permission-race semantics apply to replay export through the ordinary capability path.",
+    "Denied replay export fails closed and records the governance decision.",
+    "Authorized replay export records an ALLOW decision before constructing the bundle, so the exported history contains its disclosure authorization event.",
+    "Bundle verification and import do not themselves grant source disclosure authority."
+  ]
+}
