@@ -1,0 +1,11 @@
+{
+  "fixture": "replay_edge_hardening",
+  "version": "0.1",
+  "requirements": [
+    "Replay bundle events must be a non-empty array.",
+    "Bundle format, event schema, and projection version headers must be non-empty strings and are never coerced from other types.",
+    "A replay history must begin with exactly one RelationshipCreated event authored by tria:system.",
+    "Malformed bundles and invalid relationship roots fail closed before import writes any events.",
+    "A valid hash chain alone is insufficient when the history is not a valid TRIA relationship history."
+  ]
+}
