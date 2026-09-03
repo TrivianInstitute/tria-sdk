@@ -5,6 +5,7 @@ from typing import Any
 from uuid import uuid4
 
 from .core import Relationship
+from .governance import GovernanceEngine
 from .types import Capability, GovernanceDecision, GovernanceOutcome
 
 
@@ -64,35 +65,34 @@ class InvocationResult:
 
 
 class Runtime:
-    """Model-agnostic boundary between governed relationship state and execution.
-
-    Runtime prepares an invocation but never calls a provider itself. Applications
-    may hand the resulting plan to any model, agent, deterministic service, or
-    other executor. Only explicitly requested and READ-authorized context is
-    surfaced. Consent requirements are evaluated independently from capabilities;
-    both must pass when both are declared.
-    """
+    """Model-agnostic boundary between governed relationship state and execution."""
 
     def prepare(self, relationship: Relationship, request: InvocationRequest) -> InvocationPlan:
         relationship.record_invocation_proposed(request)
-
         decisions: list[GovernanceDecision] = []
+
+        lifecycle_decision = GovernanceEngine().require_runtime_execution(relationship.state)
+        decisions.append(lifecycle_decision)
+        if lifecycle_decision.outcome is not GovernanceOutcome.ALLOW:
+            relationship.record_invocation_resolution(
+                request.requested_by,
+                request.request_id,
+                "BLOCKED",
+                reason=lifecycle_decision.reason,
+            )
+            return InvocationPlan(
+                request=request,
+                outcome=lifecycle_decision.outcome,
+                decisions=tuple(decisions),
+                reason=lifecycle_decision.reason,
+            )
+
         for requirement in request.consent_requirements:
             decision = relationship.require_consent(requirement.actor, requirement.scope)
             decisions.append(decision)
             if decision.outcome is not GovernanceOutcome.ALLOW:
-                relationship.record_invocation_resolution(
-                    request.requested_by,
-                    request.request_id,
-                    "BLOCKED",
-                    reason=decision.reason,
-                )
-                return InvocationPlan(
-                    request=request,
-                    outcome=decision.outcome,
-                    decisions=tuple(decisions),
-                    reason=decision.reason,
-                )
+                relationship.record_invocation_resolution(request.requested_by, request.request_id, "BLOCKED", reason=decision.reason)
+                return InvocationPlan(request=request, outcome=decision.outcome, decisions=tuple(decisions), reason=decision.reason)
 
         requirements = list(request.requirements)
         for resource in request.context_resources:
@@ -101,39 +101,25 @@ class Runtime:
                 requirements.append(read_requirement)
 
         for requirement in requirements:
-            decision = relationship.check_capability(
-                request.requested_by,
-                requirement.resource,
-                requirement.capability,
-            )
+            decision = relationship.check_capability(request.requested_by, requirement.resource, requirement.capability)
             decisions.append(decision)
             if decision.outcome is not GovernanceOutcome.ALLOW:
-                relationship.record_invocation_resolution(
-                    request.requested_by,
-                    request.request_id,
-                    "BLOCKED",
-                    reason=decision.reason,
-                )
-                return InvocationPlan(
-                    request=request,
-                    outcome=decision.outcome,
-                    decisions=tuple(decisions),
-                    reason=decision.reason,
-                )
+                relationship.record_invocation_resolution(request.requested_by, request.request_id, "BLOCKED", reason=decision.reason)
+                return InvocationPlan(request=request, outcome=decision.outcome, decisions=tuple(decisions), reason=decision.reason)
 
         context = tuple(self._resolve_context(relationship, resource) for resource in request.context_resources)
         relationship.record_invocation_resolution(
             request.requested_by,
             request.request_id,
             "AUTHORIZED",
-            reason="All required consent and capabilities are active.",
+            reason="Lifecycle, consent, and capability requirements are active.",
         )
         return InvocationPlan(
             request=request,
             outcome=GovernanceOutcome.ALLOW,
             decisions=tuple(decisions),
             context=context,
-            reason="All required consent and capabilities are active.",
+            reason="Lifecycle, consent, and capability requirements are active.",
         )
 
     def record_result(self, relationship: Relationship, result: InvocationResult) -> None:

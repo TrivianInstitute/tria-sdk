@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 from .state import RelationalState
-from .types import Capability, GovernanceDecision, GovernanceOutcome, utcnow
+from .types import Capability, GovernanceDecision, GovernanceOutcome, LifecycleState, utcnow
 
 
 @dataclass(frozen=True, slots=True)
@@ -39,10 +39,34 @@ class GovernanceEngine:
         return GovernanceDecision(GovernanceOutcome.REQUIRE_CONSENT, "core.consent.active", "0.1", f"No active consent exists for {actor!r} scope {scope!r}.")
 
     def require_capability(self, state: RelationalState, grantee: str, resource: str, capability: Capability) -> GovernanceDecision:
+        lifecycle = self.require_lifecycle_capability(state, capability)
+        if lifecycle.outcome is not GovernanceOutcome.ALLOW:
+            return lifecycle
         record = state.permissions.get((grantee, resource, capability))
         if record and record.active:
             return GovernanceDecision(GovernanceOutcome.ALLOW, "core.permission.active", "0.1", f"{grantee!r} has active {capability.value} permission for {resource!r}.")
         return GovernanceDecision(GovernanceOutcome.BLOCK, "core.permission.active", "0.1", f"No active {capability.value} permission exists for {grantee!r} on {resource!r}.")
+
+    def require_lifecycle_capability(self, state: RelationalState, capability: Capability) -> GovernanceDecision:
+        allowed: dict[LifecycleState, frozenset[Capability]] = {
+            LifecycleState.FORMING: frozenset(Capability),
+            LifecycleState.ACTIVE: frozenset(Capability),
+            LifecycleState.RENEWING: frozenset(Capability),
+            LifecycleState.TRANSFORMING: frozenset(Capability),
+            LifecycleState.RESTING: frozenset({Capability.READ, Capability.STORE}),
+            LifecycleState.DORMANT: frozenset({Capability.READ}),
+            LifecycleState.DISSOLVING: frozenset({Capability.READ}),
+            LifecycleState.DISSOLVED: frozenset(),
+        }
+        if capability in allowed[state.lifecycle]:
+            return GovernanceDecision(GovernanceOutcome.ALLOW, "core.lifecycle.capability", "0.1", f"{capability.value} is permitted while relationship is {state.lifecycle.value}.")
+        return GovernanceDecision(GovernanceOutcome.BLOCK, "core.lifecycle.capability", "0.1", f"{capability.value} is blocked while relationship is {state.lifecycle.value}.")
+
+    def require_runtime_execution(self, state: RelationalState) -> GovernanceDecision:
+        if state.lifecycle in {LifecycleState.FORMING, LifecycleState.ACTIVE, LifecycleState.RENEWING, LifecycleState.TRANSFORMING}:
+            return GovernanceDecision(GovernanceOutcome.ALLOW, "core.lifecycle.runtime", "0.1", f"Runtime execution is permitted while relationship is {state.lifecycle.value}.")
+        outcome = GovernanceOutcome.BLOCK if state.lifecycle is LifecycleState.DISSOLVED else GovernanceOutcome.PAUSE
+        return GovernanceDecision(outcome, "core.lifecycle.runtime", "0.1", f"Runtime execution is not permitted while relationship is {state.lifecycle.value}.")
 
     def require_policy_authority(self, state: RelationalState, actor: str, authority_scope: str) -> GovernanceDecision:
         record = state.policy_authorities.get((actor, authority_scope))

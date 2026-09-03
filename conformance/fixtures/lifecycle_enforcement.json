@@ -1,0 +1,15 @@
+{
+  "fixture_version": "0.1",
+  "name": "lifecycle-enforcement",
+  "description": "Lifecycle state constrains operational authority without rewriting historical events or permissions.",
+  "expect": {
+    "resting_allows_read": true,
+    "resting_blocks_act": true,
+    "dormant_blocks_derive": true,
+    "dissolving_blocks_derive": true,
+    "dissolved_blocks_all_capabilities": true,
+    "resting_runtime_outcome": "PAUSE",
+    "dissolved_runtime_outcome": "BLOCK",
+    "historical_audit_preserved": true
+  }
+}
