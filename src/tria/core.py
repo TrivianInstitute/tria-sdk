@@ -7,7 +7,7 @@ from .events import EventProposal, RelationalEvent, verify_event_chain
 from .governance import GovernanceEngine
 from .state import RelationalState, reduce_events
 from .store import EventStore, InMemoryEventStore
-from .types import EpistemicType, LifecycleState
+from .types import Capability, EpistemicType, LifecycleState
 
 
 class EpistemicAdmissionError(ValueError):
@@ -38,7 +38,7 @@ class Relationship:
 
     def _commit(self, event_type: str, actor: str, payload: dict, causal_parents: tuple[str, ...] = ()) -> RelationalEvent:
         prior = self.events[-1].event_hash if self.events else None
-        proposal = EventProposal(relationship_id=self.relationship_id, event_type=event_type, actor_id=actor, payload=payload, actor_sequence=self._next_actor_sequence(actor), causal_parents=causal_parents)
+        proposal = EventProposal(self.relationship_id, event_type, actor, payload, self._next_actor_sequence(actor), causal_parents)
         event = RelationalEvent.commit(proposal, previous_event_hash=prior)
         self._store.append(event)
         return event
@@ -48,6 +48,28 @@ class Relationship:
 
     def revoke_consent(self, actor: str, scope: str) -> RelationalEvent:
         return self._commit("ConsentRevoked", actor, {"actor": actor, "scope": scope})
+
+    def grant_permission(self, granted_by: str, grantee: str, resource: str, capability: Capability, purpose: str | None = None) -> RelationalEvent:
+        return self._commit("PermissionGranted", granted_by, {"granted_by": granted_by, "grantee": grantee, "resource": resource, "capability": capability.value, "purpose": purpose})
+
+    def revoke_permission(self, actor: str, grantee: str, resource: str, capability: Capability) -> RelationalEvent:
+        return self._commit("PermissionRevoked", actor, {"grantee": grantee, "resource": resource, "capability": capability.value})
+
+    def check_capability(self, grantee: str, resource: str, capability: Capability):
+        decision = self._governance.require_capability(self.state, grantee, resource, capability)
+        self._commit("GovernanceEvaluated", "tria:governance", {"outcome": decision.outcome.value, "policy_id": decision.policy_id, "policy_version": decision.policy_version, "reason": decision.reason, "grantee": grantee, "resource": resource, "capability": capability.value})
+        return decision
+
+    def adopt_policy(self, actor: str, policy_id: str, policy_version: str, authority_scope: str) -> RelationalEvent:
+        return self._commit("PolicyAdopted", actor, {"policy_id": policy_id, "policy_version": policy_version, "adopted_by": actor, "authority_scope": authority_scope})
+
+    def revoke_policy(self, actor: str, policy_id: str, policy_version: str) -> RelationalEvent:
+        return self._commit("PolicyRevoked", actor, {"policy_id": policy_id, "policy_version": policy_version})
+
+    def check_policy_adoption(self, policy_id: str, policy_version: str):
+        decision = self._governance.require_policy_adoption(self.state, policy_id, policy_version)
+        self._commit("GovernanceEvaluated", "tria:governance", {"outcome": decision.outcome.value, "policy_id": decision.policy_id, "policy_version": decision.policy_version, "reason": decision.reason, "checked_policy_id": policy_id, "checked_policy_version": policy_version})
+        return decision
 
     def register_claim(self, actor: str, epistemic_type: EpistemicType, content: str, *, derived_from: list[str] | None = None, source_refs: list[str] | None = None) -> ClaimHandle:
         derived_from = derived_from or []
@@ -74,14 +96,7 @@ class Relationship:
     def audit(self) -> dict:
         events = self.events
         last_event_id = events[-1].event_id if events else None
-        return {
-            "relationship_id": self.relationship_id,
-            "event_count": len(events),
-            "hashes_valid": all(e.verify_hash() for e in events),
-            "chain_valid": verify_event_chain(events),
-            "last_event_id": last_event_id,
-            "reconstructable": self.state.last_event_id == last_event_id,
-        }
+        return {"relationship_id": self.relationship_id, "event_count": len(events), "hashes_valid": all(e.verify_hash() for e in events), "chain_valid": verify_event_chain(events), "last_event_id": last_event_id, "reconstructable": self.state.last_event_id == last_event_id}
 
 
 class Tria:
