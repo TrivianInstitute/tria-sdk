@@ -1,0 +1,14 @@
+{
+  "fixture_version": "0.1",
+  "name": "portable-replay-bundle",
+  "description": "A conforming implementation can export and independently verify a relationship event stream plus deterministic projection.",
+  "expect": {
+    "event_hashes_verified": true,
+    "hash_chain_verified": true,
+    "relationship_identity_consistent": true,
+    "projection_replayed_deterministically": true,
+    "projection_digest_verified": true,
+    "tampered_event_rejected": true,
+    "tampered_projection_rejected": true
+  }
+}
