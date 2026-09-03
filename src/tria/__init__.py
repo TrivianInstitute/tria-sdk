@@ -16,7 +16,16 @@ from .compat import (
     require_supported_compatibility,
     require_supported_event_schema,
 )
-from .core import ClaimHandle, DelegationError, EpistemicAdmissionError, PolicyAuthorityError, Relationship, Tria
+from .core import (
+    ClaimHandle,
+    DelegationError,
+    EpistemicAdmissionError,
+    LifecycleAuthorityError,
+    LifecycleTransitionError,
+    PolicyAuthorityError,
+    Relationship,
+    Tria,
+)
 from .events import EventProposal, RelationalEvent, verify_event_chain
 from .execution import ExecutionBridge, ExecutionReceipt, Executor
 from .governance import GovernanceEngine, Policy, PolicyAdoption
@@ -50,6 +59,7 @@ from .types import (
     EpistemicType,
     GovernanceDecision,
     GovernanceOutcome,
+    LifecycleAuthorityRecord,
     LifecycleState,
     PermissionRecord,
     PolicyAdoptionRecord,
@@ -65,8 +75,9 @@ __all__ = [
     "CrossBoundaryGovernanceError", "CURRENT_BUNDLE_FORMAT_VERSION", "CURRENT_EVENT_SCHEMA_VERSION", "CURRENT_PROJECTION_VERSION",
     "DelegationError", "DisclosureHandle", "EpistemicAdmissionError", "EpistemicType", "EventProposal", "EventStore",
     "ExecutionBridge", "ExecutionReceipt", "Executor", "GovernanceDecision", "GovernanceEngine", "GovernanceOutcome",
-    "InMemoryEventStore", "InvocationPlan", "InvocationRequest", "InvocationResult", "LifecycleState", "OpenAIResponsesAdapter",
-    "PermissionRecord", "Policy", "PolicyAdoption", "PolicyAdoptionRecord", "PolicyAuthorityError", "PolicyAuthorityRecord",
+    "InMemoryEventStore", "InvocationPlan", "InvocationRequest", "InvocationResult", "LifecycleAuthorityError",
+    "LifecycleAuthorityRecord", "LifecycleState", "LifecycleTransitionError", "OpenAIResponsesAdapter", "PermissionRecord",
+    "Policy", "PolicyAdoption", "PolicyAdoptionRecord", "PolicyAuthorityError", "PolicyAuthorityRecord",
     "PolicyDefinitionRecord", "ProviderAdapter", "ProviderRequest", "ProviderResponse", "ProviderTranslationError",
     "ReconsentRequirement", "RelationalEvent", "RelationalState", "Relationship", "ReplayBundle", "ReplayImportError",
     "Runtime", "SQLiteEventStore", "SchemaCompatibilityError", "Tria", "__version__", "admit_disclosure",

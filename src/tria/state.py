@@ -11,6 +11,7 @@ from .types import (
     ClaimStatus,
     ConsentRecord,
     EpistemicType,
+    LifecycleAuthorityRecord,
     LifecycleState,
     PermissionRecord,
     PolicyAdoptionRecord,
@@ -27,6 +28,7 @@ class RelationalState:
     lifecycle: LifecycleState = LifecycleState.FORMING
     consent: dict[tuple[str, str], ConsentRecord] = field(default_factory=dict)
     permissions: dict[tuple[str, str, Capability], PermissionRecord] = field(default_factory=dict)
+    lifecycle_authorities: dict[str, LifecycleAuthorityRecord] = field(default_factory=dict)
     policy_authorities: dict[tuple[str, str], PolicyAuthorityRecord] = field(default_factory=dict)
     policy_definitions: dict[tuple[str, str], PolicyDefinitionRecord] = field(default_factory=dict)
     policy_adoptions: dict[tuple[str, str], PolicyAdoptionRecord] = field(default_factory=dict)
@@ -56,7 +58,7 @@ def reduce_events(relationship_id: str, events: Iterable[RelationalEvent]) -> Re
             consent[(record.actor, record.scope)] = record
             reconsent = dict(state.reconsent_requirements)
             reconsent.pop((record.actor, record.scope), None)
-            state = replace(state, consent=consent, reconsent_requirements=reconsent, lifecycle=LifecycleState.ACTIVE, last_event_id=event.event_id)
+            state = replace(state, consent=consent, reconsent_requirements=reconsent, last_event_id=event.event_id)
         elif event.event_type == "ConsentRevoked":
             consent = dict(state.consent)
             key = (p["actor"], p["scope"])
@@ -77,6 +79,18 @@ def reduce_events(relationship_id: str, events: Iterable[RelationalEvent]) -> Re
             if prior is not None:
                 permissions[key] = replace(prior, active=False)
             state = replace(state, permissions=permissions, last_event_id=event.event_id)
+        elif event.event_type == "LifecycleAuthorityGranted":
+            authorities = dict(state.lifecycle_authorities)
+            record = LifecycleAuthorityRecord(p["authority_holder"], p["granted_by"], True)
+            authorities[record.authority_holder] = record
+            state = replace(state, lifecycle_authorities=authorities, last_event_id=event.event_id)
+        elif event.event_type == "LifecycleAuthorityRevoked":
+            authorities = dict(state.lifecycle_authorities)
+            holder = p["authority_holder"]
+            prior = authorities.get(holder)
+            if prior is not None:
+                authorities[holder] = replace(prior, active=False)
+            state = replace(state, lifecycle_authorities=authorities, last_event_id=event.event_id)
         elif event.event_type == "PolicyAuthorityGranted":
             authorities = dict(state.policy_authorities)
             record = PolicyAuthorityRecord(p["authority_holder"], p["authority_scope"], p["granted_by"], True)
