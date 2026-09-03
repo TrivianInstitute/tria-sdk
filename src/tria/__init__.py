@@ -6,7 +6,7 @@ from .compat import (
     check_event_schema,
     require_supported_event_schema,
 )
-from .core import ClaimHandle, EpistemicAdmissionError, PolicyAuthorityError, Relationship, Tria
+from .core import ClaimHandle, DelegationError, EpistemicAdmissionError, PolicyAuthorityError, Relationship, Tria
 from .events import EventProposal, RelationalEvent, verify_event_chain
 from .execution import ExecutionBridge, ExecutionReceipt, Executor
 from .governance import GovernanceEngine, Policy, PolicyAdoption
@@ -41,7 +41,7 @@ from .version import __version__
 __all__ = [
     "AnthropicMessagesAdapter", "Capability", "CapabilityRequirement", "Claim", "ClaimHandle", "ClaimStatus",
     "CompatibilityReport", "ConsentRecord", "ContextItem", "CURRENT_EVENT_SCHEMA_VERSION", "CURRENT_PROJECTION_VERSION",
-    "EpistemicAdmissionError", "EpistemicType", "EventProposal", "EventStore", "ExecutionBridge", "ExecutionReceipt",
+    "DelegationError", "EpistemicAdmissionError", "EpistemicType", "EventProposal", "EventStore", "ExecutionBridge", "ExecutionReceipt",
     "Executor", "GovernanceDecision", "GovernanceEngine", "GovernanceOutcome", "InMemoryEventStore", "InvocationPlan",
     "InvocationRequest", "InvocationResult", "LifecycleState", "OpenAIResponsesAdapter", "PermissionRecord", "Policy",
     "PolicyAdoption", "PolicyAdoptionRecord", "PolicyAuthorityError", "PolicyAuthorityRecord", "PolicyDefinitionRecord",

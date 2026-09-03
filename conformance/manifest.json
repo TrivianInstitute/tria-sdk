@@ -8,6 +8,8 @@
     "hash_chain_verification",
     "scoped_consent",
     "capability_separation",
+    "explicit_delegation_authority",
+    "ambiguous_permission_races_fail_closed",
     "policy_adoption",
     "epistemic_provenance",
     "preserved_disagreement",
@@ -20,6 +22,7 @@
     "fixtures/governed_access.json",
     "fixtures/runtime_boundary.json",
     "fixtures/provider_boundary.json",
-    "fixtures/execution_bridge.json"
+    "fixtures/execution_bridge.json",
+    "fixtures/delegation_races_v0.1.json"
   ]
 }

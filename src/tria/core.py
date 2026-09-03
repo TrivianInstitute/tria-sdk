@@ -7,7 +7,7 @@ from .events import EventProposal, RelationalEvent, verify_event_chain
 from .governance import GovernanceEngine
 from .state import RelationalState, reduce_events
 from .store import EventStore, InMemoryEventStore
-from .types import Capability, EpistemicType, GovernanceOutcome, LifecycleState
+from .types import Capability, EpistemicType, GovernanceDecision, GovernanceOutcome, LifecycleState
 
 
 class EpistemicAdmissionError(ValueError):
@@ -15,6 +15,10 @@ class EpistemicAdmissionError(ValueError):
 
 
 class PolicyAuthorityError(PermissionError):
+    pass
+
+
+class DelegationError(PermissionError):
     pass
 
 
@@ -47,27 +51,76 @@ class Relationship:
         self._store.append(event)
         return event
 
+    def _event_by_id(self, event_id: str) -> RelationalEvent | None:
+        return next((event for event in self.events if event.event_id == event_id), None)
+
+    def _causally_precedes(self, left: RelationalEvent, right: RelationalEvent) -> bool:
+        if left.actor_id == right.actor_id and left.actor_sequence < right.actor_sequence:
+            return True
+        pending = list(right.causal_parents)
+        seen: set[str] = set()
+        while pending:
+            event_id = pending.pop()
+            if event_id in seen:
+                continue
+            seen.add(event_id)
+            if event_id == left.event_id:
+                return True
+            parent = self._event_by_id(event_id)
+            if parent is not None:
+                pending.extend(parent.causal_parents)
+        return False
+
+    def _permission_race_is_ambiguous(self, grantee: str, resource: str, capability: Capability) -> bool:
+        relevant = [
+            event for event in self.events
+            if event.event_type in {"PermissionGranted", "PermissionRevoked"}
+            and event.payload.get("grantee") == grantee
+            and event.payload.get("resource") == resource
+            and event.payload.get("capability") == capability.value
+        ]
+        grants = [event for event in relevant if event.event_type == "PermissionGranted"]
+        revokes = [event for event in relevant if event.event_type == "PermissionRevoked"]
+        if not grants or not revokes:
+            return False
+        grant = grants[-1]
+        revoke = revokes[-1]
+        return not self._causally_precedes(grant, revoke) and not self._causally_precedes(revoke, grant)
+
     def grant_consent(self, actor: str, scope: str, purpose: str | None = None) -> RelationalEvent:
         return self._commit("ConsentGranted", actor, {"actor": actor, "scope": scope, "purpose": purpose})
 
     def revoke_consent(self, actor: str, scope: str) -> RelationalEvent:
         return self._commit("ConsentRevoked", actor, {"actor": actor, "scope": scope})
 
-    def grant_permission(self, granted_by: str, grantee: str, resource: str, capability: Capability, purpose: str | None = None) -> RelationalEvent:
-        return self._commit("PermissionGranted", granted_by, {"granted_by": granted_by, "grantee": grantee, "resource": resource, "capability": capability.value, "purpose": purpose})
+    def grant_permission(self, granted_by: str, grantee: str, resource: str, capability: Capability, purpose: str | None = None, *, causal_parents: tuple[str, ...] = ()) -> RelationalEvent:
+        return self._commit("PermissionGranted", granted_by, {"granted_by": granted_by, "grantee": grantee, "resource": resource, "capability": capability.value, "purpose": purpose, "delegated": False}, causal_parents)
 
-    def revoke_permission(self, actor: str, grantee: str, resource: str, capability: Capability) -> RelationalEvent:
-        return self._commit("PermissionRevoked", actor, {"grantee": grantee, "resource": resource, "capability": capability.value})
+    def delegate_permission(self, delegated_by: str, grantee: str, resource: str, capability: Capability, purpose: str | None = None, *, causal_parents: tuple[str, ...] = ()) -> RelationalEvent:
+        decision = self.check_capability(delegated_by, resource, Capability.DELEGATE)
+        if decision.outcome is not GovernanceOutcome.ALLOW:
+            raise DelegationError(f"{delegated_by!r} cannot delegate permissions for {resource!r} without active DELEGATE authority.")
+        return self._commit("PermissionGranted", delegated_by, {"granted_by": delegated_by, "grantee": grantee, "resource": resource, "capability": capability.value, "purpose": purpose, "delegated": True}, causal_parents)
 
-    def check_capability(self, grantee: str, resource: str, capability: Capability):
-        decision = self._governance.require_capability(self.state, grantee, resource, capability)
+    def revoke_permission(self, actor: str, grantee: str, resource: str, capability: Capability, *, causal_parents: tuple[str, ...] = ()) -> RelationalEvent:
+        return self._commit("PermissionRevoked", actor, {"grantee": grantee, "resource": resource, "capability": capability.value}, causal_parents)
+
+    def check_capability(self, grantee: str, resource: str, capability: Capability) -> GovernanceDecision:
+        if self._permission_race_is_ambiguous(grantee, resource, capability):
+            decision = GovernanceDecision(GovernanceOutcome.BLOCK, "core.permission.race", "0.1", f"Permission state for {grantee!r} on {resource!r} is causally ambiguous; revocation dominates until order is established.")
+        else:
+            decision = self._governance.require_capability(self.state, grantee, resource, capability)
         self._commit("GovernanceEvaluated", "tria:governance", {"outcome": decision.outcome.value, "policy_id": decision.policy_id, "policy_version": decision.policy_version, "reason": decision.reason, "grantee": grantee, "resource": resource, "capability": capability.value})
         return decision
 
     def grant_policy_authority(self, granted_by: str, authority_holder: str, authority_scope: str) -> RelationalEvent:
+        if granted_by != "tria:system":
+            self._require_policy_authority(granted_by, authority_scope)
         return self._commit("PolicyAuthorityGranted", granted_by, {"granted_by": granted_by, "authority_holder": authority_holder, "authority_scope": authority_scope})
 
     def revoke_policy_authority(self, actor: str, authority_holder: str, authority_scope: str) -> RelationalEvent:
+        if actor != "tria:system":
+            self._require_policy_authority(actor, authority_scope)
         return self._commit("PolicyAuthorityRevoked", actor, {"authority_holder": authority_holder, "authority_scope": authority_scope})
 
     def _require_policy_authority(self, actor: str, authority_scope: str) -> None:
