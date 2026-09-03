@@ -2,7 +2,7 @@
   "tria_core_spec": "0.1.1",
   "bundle_format_version": "0.1",
   "event_schema_version": "0.1",
-  "projection_version": "0.2",
+  "projection_version": "0.3",
   "required_semantics": [
     "immutable_events",
     "deterministic_replay",
@@ -19,6 +19,9 @@
     "explicit_delegation_authority",
     "ambiguous_permission_races_fail_closed",
     "lifecycle_enforces_operational_authority",
+    "lifecycle_transitions_require_explicit_authority",
+    "lifecycle_transition_graph_fails_closed",
+    "consent_does_not_mutate_lifecycle",
     "dissolved_relationship_blocks_operations",
     "policy_adoption",
     "epistemic_provenance",
@@ -38,6 +41,7 @@
     "fixtures/lifecycle_enforcement.json",
     "fixtures/portable_replay_bundle.json",
     "fixtures/replay_import.json",
-    "fixtures/cross_boundary_governance.json"
+    "fixtures/cross_boundary_governance.json",
+    "fixtures/lifecycle_authority.json"
   ]
 }
