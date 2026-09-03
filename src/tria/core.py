@@ -69,6 +69,16 @@ class Relationship:
         self._store.append(event)
         return event
 
+    def record_governance_decision(self, decision: GovernanceDecision, **context) -> RelationalEvent:
+        payload = {
+            "outcome": decision.outcome.value,
+            "policy_id": decision.policy_id,
+            "policy_version": decision.policy_version,
+            "reason": decision.reason,
+            **context,
+        }
+        return self._commit("GovernanceEvaluated", "tria:governance", payload)
+
     def _event_by_id(self, event_id: str) -> RelationalEvent | None:
         return next((event for event in self.events if event.event_id == event_id), None)
 
@@ -90,7 +100,13 @@ class Relationship:
         return False
 
     def _permission_race_is_ambiguous(self, grantee: str, resource: str, capability: Capability) -> bool:
-        relevant = [event for event in self.events if event.event_type in {"PermissionGranted", "PermissionRevoked"} and event.payload.get("grantee") == grantee and event.payload.get("resource") == resource and event.payload.get("capability") == capability.value]
+        relevant = [
+            event for event in self.events
+            if event.event_type in {"PermissionGranted", "PermissionRevoked"}
+            and event.payload.get("grantee") == grantee
+            and event.payload.get("resource") == resource
+            and event.payload.get("capability") == capability.value
+        ]
         grants = [event for event in relevant if event.event_type == "PermissionGranted"]
         revokes = [event for event in relevant if event.event_type == "PermissionRevoked"]
         if not grants or not revokes:
@@ -99,113 +115,109 @@ class Relationship:
         revoke = revokes[-1]
         return not self._causally_precedes(grant, revoke) and not self._causally_precedes(revoke, grant)
 
-    def grant_consent(
-        self,
-        actor: str,
-        scope: str,
-        purpose: str | None = None,
-        *,
-        expires_at: datetime | None = None,
-        conditions: tuple[str, ...] = (),
-    ) -> RelationalEvent:
-        return self._commit("ConsentGranted", actor, {"actor": actor, "scope": scope, "purpose": purpose, "expires_at": _expiry_value(expires_at), "conditions": list(conditions)})
+    def grant_consent(self, actor: str, scope: str, purpose: str | None = None, *, expires_at: datetime | None = None, conditions: tuple[str, ...] = ()) -> RelationalEvent:
+        return self._commit("ConsentGranted", actor, {
+            "actor": actor, "scope": scope, "purpose": purpose,
+            "expires_at": _expiry_value(expires_at), "conditions": list(conditions),
+        })
 
     def revoke_consent(self, actor: str, scope: str) -> RelationalEvent:
         return self._commit("ConsentRevoked", actor, {"actor": actor, "scope": scope})
 
-    def grant_permission(
-        self,
-        granted_by: str,
-        grantee: str,
-        resource: str,
-        capability: Capability,
-        purpose: str | None = None,
-        *,
-        expires_at: datetime | None = None,
-        conditions: tuple[str, ...] = (),
-        causal_parents: tuple[str, ...] = (),
-    ) -> RelationalEvent:
-        return self._commit("PermissionGranted", granted_by, {"granted_by": granted_by, "grantee": grantee, "resource": resource, "capability": capability.value, "purpose": purpose, "expires_at": _expiry_value(expires_at), "conditions": list(conditions), "delegated": False}, causal_parents)
+    def grant_permission(self, granted_by: str, grantee: str, resource: str, capability: Capability, purpose: str | None = None, *, expires_at: datetime | None = None, conditions: tuple[str, ...] = (), causal_parents: tuple[str, ...] = ()) -> RelationalEvent:
+        return self._commit("PermissionGranted", granted_by, {
+            "granted_by": granted_by, "grantee": grantee, "resource": resource,
+            "capability": capability.value, "purpose": purpose,
+            "expires_at": _expiry_value(expires_at), "conditions": list(conditions), "delegated": False,
+        }, causal_parents)
 
-    def delegate_permission(
-        self,
-        delegated_by: str,
-        grantee: str,
-        resource: str,
-        capability: Capability,
-        purpose: str | None = None,
-        *,
-        expires_at: datetime | None = None,
-        conditions: tuple[str, ...] = (),
-        satisfied_conditions: tuple[str, ...] = (),
-        causal_parents: tuple[str, ...] = (),
-    ) -> RelationalEvent:
+    def delegate_permission(self, delegated_by: str, grantee: str, resource: str, capability: Capability, purpose: str | None = None, *, expires_at: datetime | None = None, conditions: tuple[str, ...] = (), satisfied_conditions: tuple[str, ...] = (), causal_parents: tuple[str, ...] = ()) -> RelationalEvent:
         decision = self.check_capability(delegated_by, resource, Capability.DELEGATE, purpose=purpose, satisfied_conditions=satisfied_conditions)
+        self.record_governance_decision(
+            decision,
+            operation="delegate_permission",
+            grantee=delegated_by,
+            resource=resource,
+            capability=Capability.DELEGATE.value,
+            purpose=purpose,
+            satisfied_conditions=list(satisfied_conditions),
+        )
         if decision.outcome is not GovernanceOutcome.ALLOW:
             raise DelegationError(f"{delegated_by!r} cannot delegate permissions for {resource!r} without active DELEGATE authority for the requested purpose and conditions.")
-        return self._commit("PermissionGranted", delegated_by, {"granted_by": delegated_by, "grantee": grantee, "resource": resource, "capability": capability.value, "purpose": purpose, "expires_at": _expiry_value(expires_at), "conditions": list(conditions), "delegated": True}, causal_parents)
+        return self._commit("PermissionGranted", delegated_by, {
+            "granted_by": delegated_by, "grantee": grantee, "resource": resource,
+            "capability": capability.value, "purpose": purpose,
+            "expires_at": _expiry_value(expires_at), "conditions": list(conditions), "delegated": True,
+        }, causal_parents)
 
     def revoke_permission(self, actor: str, grantee: str, resource: str, capability: Capability, *, causal_parents: tuple[str, ...] = ()) -> RelationalEvent:
         return self._commit("PermissionRevoked", actor, {"grantee": grantee, "resource": resource, "capability": capability.value}, causal_parents)
 
-    def check_capability(
-        self,
-        grantee: str,
-        resource: str,
-        capability: Capability,
-        purpose: str | None = None,
-        *,
-        satisfied_conditions: tuple[str, ...] = (),
-    ) -> GovernanceDecision:
+    def check_capability(self, grantee: str, resource: str, capability: Capability, purpose: str | None = None, *, satisfied_conditions: tuple[str, ...] = ()) -> GovernanceDecision:
         if self._permission_race_is_ambiguous(grantee, resource, capability):
-            decision = GovernanceDecision(GovernanceOutcome.BLOCK, "core.permission.race", "0.1", f"Permission state for {grantee!r} on {resource!r} is causally ambiguous; revocation dominates until order is established.")
-        else:
-            decision = self._governance.require_capability(self.state, grantee, resource, capability, purpose=purpose, satisfied_conditions=satisfied_conditions)
-        self._commit("GovernanceEvaluated", "tria:governance", {"outcome": decision.outcome.value, "policy_id": decision.policy_id, "policy_version": decision.policy_version, "reason": decision.reason, "grantee": grantee, "resource": resource, "capability": capability.value, "purpose": purpose, "satisfied_conditions": list(satisfied_conditions)})
-        return decision
+            return GovernanceDecision(
+                GovernanceOutcome.BLOCK,
+                "core.permission.race",
+                "0.1",
+                f"Permission state for {grantee!r} on {resource!r} is causally ambiguous; revocation dominates until order is established.",
+            )
+        return self._governance.require_capability(
+            self.state,
+            grantee,
+            resource,
+            capability,
+            purpose=purpose,
+            satisfied_conditions=satisfied_conditions,
+        )
 
     def grant_lifecycle_authority(self, granted_by: str, authority_holder: str) -> RelationalEvent:
         if granted_by != "tria:system":
-            self._require_lifecycle_authority(granted_by)
+            self._require_lifecycle_authority(granted_by, operation="grant_lifecycle_authority")
         return self._commit("LifecycleAuthorityGranted", granted_by, {"granted_by": granted_by, "authority_holder": authority_holder})
 
     def revoke_lifecycle_authority(self, actor: str, authority_holder: str) -> RelationalEvent:
         if actor != "tria:system":
-            self._require_lifecycle_authority(actor)
+            self._require_lifecycle_authority(actor, operation="revoke_lifecycle_authority")
         return self._commit("LifecycleAuthorityRevoked", actor, {"authority_holder": authority_holder})
 
-    def _require_lifecycle_authority(self, actor: str) -> None:
-        decision = self._governance.require_lifecycle_authority(self.state, actor)
-        self._commit("GovernanceEvaluated", "tria:governance", {"outcome": decision.outcome.value, "policy_id": decision.policy_id, "policy_version": decision.policy_version, "reason": decision.reason, "actor": actor, "relationship_id": self.relationship_id})
+    def check_lifecycle_authority(self, actor: str) -> GovernanceDecision:
+        return self._governance.require_lifecycle_authority(self.state, actor)
+
+    def _require_lifecycle_authority(self, actor: str, *, operation: str) -> None:
+        decision = self.check_lifecycle_authority(actor)
+        self.record_governance_decision(decision, operation=operation, actor=actor, relationship_id=self.relationship_id)
         if decision.outcome is not GovernanceOutcome.ALLOW:
             raise LifecycleAuthorityError(decision.reason)
 
     def grant_policy_authority(self, granted_by: str, authority_holder: str, authority_scope: str) -> RelationalEvent:
         if granted_by != "tria:system":
-            self._require_policy_authority(granted_by, authority_scope)
+            self._require_policy_authority(granted_by, authority_scope, operation="grant_policy_authority")
         return self._commit("PolicyAuthorityGranted", granted_by, {"granted_by": granted_by, "authority_holder": authority_holder, "authority_scope": authority_scope})
 
     def revoke_policy_authority(self, actor: str, authority_holder: str, authority_scope: str) -> RelationalEvent:
         if actor != "tria:system":
-            self._require_policy_authority(actor, authority_scope)
+            self._require_policy_authority(actor, authority_scope, operation="revoke_policy_authority")
         return self._commit("PolicyAuthorityRevoked", actor, {"authority_holder": authority_holder, "authority_scope": authority_scope})
 
-    def _require_policy_authority(self, actor: str, authority_scope: str) -> None:
-        decision = self._governance.require_policy_authority(self.state, actor, authority_scope)
-        self._commit("GovernanceEvaluated", "tria:governance", {"outcome": decision.outcome.value, "policy_id": decision.policy_id, "policy_version": decision.policy_version, "reason": decision.reason, "actor": actor, "authority_scope": authority_scope})
+    def check_policy_authority(self, actor: str, authority_scope: str) -> GovernanceDecision:
+        return self._governance.require_policy_authority(self.state, actor, authority_scope)
+
+    def _require_policy_authority(self, actor: str, authority_scope: str, *, operation: str) -> None:
+        decision = self.check_policy_authority(actor, authority_scope)
+        self.record_governance_decision(decision, operation=operation, actor=actor, authority_scope=authority_scope)
         if decision.outcome is not GovernanceOutcome.ALLOW:
             raise PolicyAuthorityError(decision.reason)
 
     def register_policy(self, actor: str, policy_id: str, policy_version: str, authority_scope: str, *, provenance_refs: tuple[str, ...] = (), consent_impacting: bool = False) -> RelationalEvent:
-        self._require_policy_authority(actor, authority_scope)
+        self._require_policy_authority(actor, authority_scope, operation="register_policy")
         return self._commit("PolicyRegistered", actor, {"policy_id": policy_id, "policy_version": policy_version, "authored_by": actor, "authority_scope": authority_scope, "provenance_refs": list(provenance_refs), "consent_impacting": consent_impacting})
 
     def amend_policy(self, actor: str, policy_id: str, policy_version: str, authority_scope: str, *, supersedes_version: str, provenance_refs: tuple[str, ...] = (), consent_impacting: bool = False) -> RelationalEvent:
-        self._require_policy_authority(actor, authority_scope)
+        self._require_policy_authority(actor, authority_scope, operation="amend_policy")
         return self._commit("PolicyAmended", actor, {"policy_id": policy_id, "policy_version": policy_version, "authored_by": actor, "authority_scope": authority_scope, "provenance_refs": list(provenance_refs), "consent_impacting": consent_impacting, "supersedes_version": supersedes_version})
 
     def adopt_policy(self, actor: str, policy_id: str, policy_version: str, authority_scope: str) -> RelationalEvent:
-        self._require_policy_authority(actor, authority_scope)
+        self._require_policy_authority(actor, authority_scope, operation="adopt_policy")
         if (policy_id, policy_version) not in self.state.policy_definitions:
             raise ValueError(f"Policy {policy_id}@{policy_version} must be registered before adoption.")
         return self._commit("PolicyAdopted", actor, {"policy_id": policy_id, "policy_version": policy_version, "adopted_by": actor, "authority_scope": authority_scope})
@@ -214,13 +226,11 @@ class Relationship:
         record = self.state.policy_adoptions.get((policy_id, policy_version))
         if record is None:
             raise ValueError(f"Policy {policy_id}@{policy_version} is not adopted.")
-        self._require_policy_authority(actor, record.authority_scope)
+        self._require_policy_authority(actor, record.authority_scope, operation="revoke_policy")
         return self._commit("PolicyRevoked", actor, {"policy_id": policy_id, "policy_version": policy_version})
 
-    def check_policy_adoption(self, policy_id: str, policy_version: str):
-        decision = self._governance.require_policy_adoption(self.state, policy_id, policy_version)
-        self._commit("GovernanceEvaluated", "tria:governance", {"outcome": decision.outcome.value, "policy_id": decision.policy_id, "policy_version": decision.policy_version, "reason": decision.reason, "checked_policy_id": policy_id, "checked_policy_version": policy_version})
-        return decision
+    def check_policy_adoption(self, policy_id: str, policy_version: str) -> GovernanceDecision:
+        return self._governance.require_policy_adoption(self.state, policy_id, policy_version)
 
     def register_claim(self, actor: str, epistemic_type: EpistemicType, content: str, *, derived_from: list[str] | None = None, source_refs: list[str] | None = None) -> ClaimHandle:
         derived_from = derived_from or []
@@ -236,29 +246,38 @@ class Relationship:
     def dispute_claim(self, actor: str, claim_id: str, alternative: str) -> RelationalEvent:
         return self._commit("ClaimDisputed", actor, {"claim_id": claim_id, "alternative": alternative})
 
+    def check_lifecycle_transition(self, to: LifecycleState) -> GovernanceDecision:
+        return self._governance.require_lifecycle_transition(self.state, to)
+
     def transition(self, actor: str, to: LifecycleState) -> RelationalEvent:
-        self._require_lifecycle_authority(actor)
-        decision = self._governance.require_lifecycle_transition(self.state, to)
-        self._commit("GovernanceEvaluated", "tria:governance", {"outcome": decision.outcome.value, "policy_id": decision.policy_id, "policy_version": decision.policy_version, "reason": decision.reason, "actor": actor, "from": self.state.lifecycle.value, "to": to.value})
+        self._require_lifecycle_authority(actor, operation="transition")
+        from_state = self.state.lifecycle
+        decision = self.check_lifecycle_transition(to)
+        self.record_governance_decision(decision, operation="transition", actor=actor, **{"from": from_state.value, "to": to.value})
         if decision.outcome is not GovernanceOutcome.ALLOW:
             raise LifecycleTransitionError(decision.reason)
-        return self._commit("LifecycleTransitioned", actor, {"from": self.state.lifecycle.value, "to": to.value})
+        return self._commit("LifecycleTransitioned", actor, {"from": from_state.value, "to": to.value})
 
-    def require_consent(
-        self,
-        actor: str,
-        scope: str,
-        purpose: str | None = None,
-        *,
-        satisfied_conditions: tuple[str, ...] = (),
-    ):
-        decision = self._governance.require_active_consent(self.state, actor, scope, purpose=purpose, satisfied_conditions=satisfied_conditions)
-        self._commit("GovernanceEvaluated", "tria:governance", {"outcome": decision.outcome.value, "policy_id": decision.policy_id, "policy_version": decision.policy_version, "reason": decision.reason, "actor": actor, "scope": scope, "purpose": purpose, "satisfied_conditions": list(satisfied_conditions)})
-        return decision
+    def require_consent(self, actor: str, scope: str, purpose: str | None = None, *, satisfied_conditions: tuple[str, ...] = ()) -> GovernanceDecision:
+        return self._governance.require_active_consent(
+            self.state,
+            actor,
+            scope,
+            purpose=purpose,
+            satisfied_conditions=satisfied_conditions,
+        )
 
     def record_invocation_proposed(self, request) -> RelationalEvent:
         action_digest = hashlib.sha256(request.action.encode("utf-8")).hexdigest()
-        return self._commit("InvocationProposed", request.requested_by, {"request_id": request.request_id, "action_digest": action_digest, "action_ref": request.action_ref, "target": request.target, "context_resources": list(request.context_resources), "requirements": [{"resource": item.resource, "capability": item.capability.value, "purpose": item.purpose, "satisfied_conditions": list(item.satisfied_conditions)} for item in request.requirements], "consent_requirements": [{"actor": item.actor, "scope": item.scope, "purpose": item.purpose, "satisfied_conditions": list(item.satisfied_conditions)} for item in request.consent_requirements]})
+        return self._commit("InvocationProposed", request.requested_by, {
+            "request_id": request.request_id,
+            "action_digest": action_digest,
+            "action_ref": request.action_ref,
+            "target": request.target,
+            "context_resources": list(request.context_resources),
+            "requirements": [{"resource": item.resource, "capability": item.capability.value, "purpose": item.purpose, "satisfied_conditions": list(item.satisfied_conditions)} for item in request.requirements],
+            "consent_requirements": [{"actor": item.actor, "scope": item.scope, "purpose": item.purpose, "satisfied_conditions": list(item.satisfied_conditions)} for item in request.consent_requirements],
+        })
 
     def record_invocation_resolution(self, actor: str, request_id: str, status: str, *, reason: str) -> RelationalEvent:
         return self._commit("InvocationResolved", "tria:governance", {"request_id": request_id, "requested_by": actor, "status": status, "reason": reason})
@@ -269,7 +288,14 @@ class Relationship:
     def audit(self) -> dict:
         events = self.events
         last_event_id = events[-1].event_id if events else None
-        return {"relationship_id": self.relationship_id, "event_count": len(events), "hashes_valid": all(e.verify_hash() for e in events), "chain_valid": verify_event_chain(events), "last_event_id": last_event_id, "reconstructable": self.state.last_event_id == last_event_id}
+        return {
+            "relationship_id": self.relationship_id,
+            "event_count": len(events),
+            "hashes_valid": all(e.verify_hash() for e in events),
+            "chain_valid": verify_event_chain(events),
+            "last_event_id": last_event_id,
+            "reconstructable": self.state.last_event_id == last_event_id,
+        }
 
 
 class Tria:
