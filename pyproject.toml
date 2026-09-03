@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tria-core"
+version = "0.1.0a1"
+description = "Model-agnostic governance kernel for persistent mediated relationships."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{name = "Sarasha Elion"}]
+license = {text = "AGPL-3.0-only"}
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q"
