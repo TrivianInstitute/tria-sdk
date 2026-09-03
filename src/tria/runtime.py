@@ -14,6 +14,7 @@ class CapabilityRequirement:
     resource: str
     capability: Capability
     purpose: str | None = None
+    satisfied_conditions: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -21,6 +22,7 @@ class ConsentRequirement:
     actor: str
     scope: str
     purpose: str | None = None
+    satisfied_conditions: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -80,7 +82,12 @@ class Runtime:
             return InvocationPlan(request=request, outcome=lifecycle_decision.outcome, decisions=tuple(decisions), reason=lifecycle_decision.reason)
 
         for requirement in request.consent_requirements:
-            decision = relationship.require_consent(requirement.actor, requirement.scope, purpose=requirement.purpose)
+            decision = relationship.require_consent(
+                requirement.actor,
+                requirement.scope,
+                purpose=requirement.purpose,
+                satisfied_conditions=requirement.satisfied_conditions,
+            )
             decisions.append(decision)
             if decision.outcome is not GovernanceOutcome.ALLOW:
                 relationship.record_invocation_resolution(request.requested_by, request.request_id, "BLOCKED", reason=decision.reason)
@@ -93,15 +100,21 @@ class Runtime:
                 requirements.append(read_requirement)
 
         for requirement in requirements:
-            decision = relationship.check_capability(request.requested_by, requirement.resource, requirement.capability, purpose=requirement.purpose)
+            decision = relationship.check_capability(
+                request.requested_by,
+                requirement.resource,
+                requirement.capability,
+                purpose=requirement.purpose,
+                satisfied_conditions=requirement.satisfied_conditions,
+            )
             decisions.append(decision)
             if decision.outcome is not GovernanceOutcome.ALLOW:
                 relationship.record_invocation_resolution(request.requested_by, request.request_id, "BLOCKED", reason=decision.reason)
                 return InvocationPlan(request=request, outcome=decision.outcome, decisions=tuple(decisions), reason=decision.reason)
 
         context = tuple(self._resolve_context(relationship, resource) for resource in request.context_resources)
-        relationship.record_invocation_resolution(request.requested_by, request.request_id, "AUTHORIZED", reason="Lifecycle, consent, capability, and purpose requirements are active.")
-        return InvocationPlan(request=request, outcome=GovernanceOutcome.ALLOW, decisions=tuple(decisions), context=context, reason="Lifecycle, consent, capability, and purpose requirements are active.")
+        relationship.record_invocation_resolution(request.requested_by, request.request_id, "AUTHORIZED", reason="Lifecycle, consent, capability, purpose, time, and condition requirements are active.")
+        return InvocationPlan(request=request, outcome=GovernanceOutcome.ALLOW, decisions=tuple(decisions), context=context, reason="Lifecycle, consent, capability, purpose, time, and condition requirements are active.")
 
     def record_result(self, relationship: Relationship, result: InvocationResult) -> None:
         relationship.record_invocation_result(result)
