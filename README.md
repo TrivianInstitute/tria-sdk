@@ -152,6 +152,10 @@ The canonical architectural baseline is in [`docs/TRIA_CORE_SPEC_v0.1.1.md`](doc
 
 ## License
 
-TRIA SDK is licensed under the **GNU Affero General Public License v3.0 only (AGPL-3.0-only)**. See [`LICENSE.md`](LICENSE.md).
+TRIA SDK is **source-available for noncommercial use** under the **PolyForm Noncommercial License 1.0.0**. Research, education, experimentation, personal use, and qualifying noncommercial organizational use are permitted subject to that license.
 
-Copyright © 2026 Sarasha Elion / Trivian Institute.
+**Commercial use is not permitted under the noncommercial license.** Any commercial use, commercial deployment, incorporation into a commercial product or service, or use on behalf of a for-profit business requires a separate written commercial license from **Trivian Institute**.
+
+See [`LICENSE.md`](LICENSE.md) for the controlling license notice and commercial-use reservation.
+
+Copyright © 2026 Trivian Institute.
