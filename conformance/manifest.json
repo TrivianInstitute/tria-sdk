@@ -49,7 +49,7 @@
     "fixtures/execution-bridge.v0.1.json",
     "fixtures/delegation_races_v0.1.json",
     "fixtures/consent_metadata_boundary.json",
-    "fixtures/lifecycle-enforcement.json",
+    "fixtures/lifecycle_enforcement.json",
     "fixtures/portable_replay_bundle.json",
     "fixtures/replay_import.json",
     "fixtures/replay_edge_hardening.json",
