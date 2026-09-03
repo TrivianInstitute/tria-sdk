@@ -1,6 +1,14 @@
 from .core import ClaimHandle, EpistemicAdmissionError, Relationship, Tria
 from .events import EventProposal, RelationalEvent, verify_event_chain
 from .governance import GovernanceEngine, Policy, PolicyAdoption
+from .providers import (
+    AnthropicMessagesAdapter,
+    OpenAIResponsesAdapter,
+    ProviderAdapter,
+    ProviderRequest,
+    ProviderResponse,
+    ProviderTranslationError,
+)
 from .runtime import CapabilityRequirement, ContextItem, InvocationPlan, InvocationRequest, InvocationResult, Runtime
 from .state import RelationalState
 from .store import EventStore, InMemoryEventStore, SQLiteEventStore
@@ -18,6 +26,7 @@ from .types import (
 )
 
 __all__ = [
+    "AnthropicMessagesAdapter",
     "Capability",
     "CapabilityRequirement",
     "Claim",
@@ -37,10 +46,15 @@ __all__ = [
     "InvocationRequest",
     "InvocationResult",
     "LifecycleState",
+    "OpenAIResponsesAdapter",
     "PermissionRecord",
     "Policy",
     "PolicyAdoption",
     "PolicyAdoptionRecord",
+    "ProviderAdapter",
+    "ProviderRequest",
+    "ProviderResponse",
+    "ProviderTranslationError",
     "RelationalEvent",
     "RelationalState",
     "Relationship",
