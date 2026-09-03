@@ -1,0 +1,11 @@
+{
+  "fixture": "replay_import",
+  "version": "0.1",
+  "requirements": [
+    "A bundle must verify before any events are written.",
+    "Imported events preserve original event_id, event_hash, timestamps, actor_sequence, and causal_parents.",
+    "Import into a relationship_id with existing persisted history fails closed.",
+    "A successful import reconstructs the same deterministic projection as the source bundle.",
+    "Tampered or schema-incompatible bundles write no events."
+  ]
+}
