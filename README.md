@@ -2,7 +2,7 @@
 
 **TRIA SDK** is a model-agnostic governance kernel and execution boundary for persistent mediated relationships.
 
-It treats consequential relational state as explicit, attributable, contestable, revisable, and auditable across time. TRIA Core does not require an AI model and makes no claim about consciousness, sentience, or phenomenological equivalence.
+It treats consequential relational state as explicit, attributable, contestable, revisable, governed, and auditable across time. TRIA Core does not require an AI model and makes no claim about consciousness, sentience, personhood, or phenomenological equivalence.
 
 ## Architectural invariant
 
@@ -18,25 +18,34 @@ A relationship is the developer-facing aggregate over an immutable event history
 R_t = reduce(E_0 ... E_t)
 ```
 
+The relationship behaves like an object, but never like mutable storage.
+
 ## What the alpha includes
 
 The current alpha implements:
 
-- immutable relational events with tamper-evident hash chains;
-- actor-local ordering and causal parents;
+- deeply immutable relational events with tamper-evident hash chains;
+- actor-local ordering, causal parents, and fail-closed ambiguous permission races;
 - deterministic state projection and SQLite persistence;
-- scoped consent grants and revocations;
+- scoped, attributable, revocable consent;
+- purpose-bound, time-bounded, and explicitly conditioned consent and permissions;
+- separate governed capabilities: `STORE`, `READ`, `DISCLOSE`, `DERIVE`, `ACT`, `DELEGATE`;
+- explicit delegation authority;
+- governed lifecycle authority and a fail-closed lifecycle transition graph;
+- policy authority, policy adoption/revocation, and re-consent semantics;
 - epistemic claims with provenance and preserved disagreement;
-- governed capabilities: `STORE`, `READ`, `DISCLOSE`, `DERIVE`, `ACT`, `DELEGATE`;
-- policy adoption/revocation and auditable governance decisions;
+- pure governance evaluation with explicit audit recording for consequential operations;
+- governed cross-boundary disclosure, admission, and derivation as distinct operations;
 - model-agnostic invocation planning and governed context filtering;
+- lifecycle-aware runtime authorization with distinct `PAUSED` and `BLOCKED` outcomes;
 - thin OpenAI Responses-style and Anthropic Messages-style request translators;
 - caller-owned execution through `ExecutionBridge`;
-- portable replay bundles with integrity-gated restore;
+- portable replay bundles with structural verification and integrity-gated restore;
+- full replay export governed by explicit `DISCLOSE` authority;
 - explicit compatibility gates for bundle format, event schema, and projection version;
-- portable conformance fixtures and tests.
+- portable schemas, conformance fixtures, and release-readiness tests.
 
-TRIA does **not** own API credentials, network transport, retries, provider SDK clients, RAG, vector memory, agent orchestration, biometrics, dashboards, or metaphysical claims.
+TRIA does **not** own API credentials, network transport, retries, provider SDK clients, RAG, vector memory, agent orchestration, federation, biometrics, dashboards, or metaphysical claims.
 
 ## Core example
 
@@ -67,7 +76,7 @@ print(rel.audit())
 
 ## Governed execution
 
-TRIA can prepare an invocation, filter context according to relationship permissions, translate it for a provider, and hand it to a caller-owned executor. A blocked plan never reaches the executor.
+TRIA can prepare an invocation, filter context according to relationship permissions, translate it for a provider, and hand it to a caller-owned executor. A blocked or paused plan never reaches the executor.
 
 ```python
 from tria import (
@@ -96,6 +105,25 @@ print(receipt.provider_request)
 
 Adapters perform translation only. Applications remain responsible for actual network execution and credentials.
 
+## Governed portable export
+
+A full replay bundle can contain claim contents and relational history, so export is a `DISCLOSE` operation rather than an unrestricted serialization helper.
+
+```python
+from tria import Capability, Tria, export_replay_bundle, replay_export_resource
+
+tria = Tria()
+rel = tria.create_relationship(["human:user", "agent:demo"])
+
+resource = replay_export_resource(rel.relationship_id)
+rel.grant_permission("human:user", "human:user", resource, Capability.DISCLOSE)
+
+bundle = export_replay_bundle(rel, actor="human:user")
+print(bundle.to_json())
+```
+
+`READ` does not substitute for `DISCLOSE`. Purpose, expiry, conditions, lifecycle restrictions, revocation, and causal ambiguity remain governed by the ordinary capability path.
+
 ## Development
 
 ```bash
@@ -104,8 +132,18 @@ pytest
 python -m build
 ```
 
+## Compatibility surface
+
+The current alpha compatibility envelope is:
+
+- package: `0.1.0a3`
+- event schema: `0.1`
+- projection: `0.4`
+- replay bundle: `0.1`
+- Core specification: `0.1.1`
+
 ## Status
 
 `0.1.0a3` is an experimental alpha intended for falsification, integration testing, interoperability testing, and architectural hardening. Passing tests establish encoded behavior only, not scientific validation, legitimate consent, legal compliance, or deployment safety.
 
-The canonical architectural baseline is in [`docs/TRIA_CORE_SPEC_v0.1.1.md`](docs/TRIA_CORE_SPEC_v0.1.1.md).
+The canonical architectural baseline is in [`docs/TRIA_CORE_SPEC_v0.1.1.md`](docs/TRIA_CORE_SPEC_v0.1.1.md). The current implementation-completion audit is in [`docs/TRIA_V0.1_COMPLETION_AUDIT.md`](docs/TRIA_V0.1_COMPLETION_AUDIT.md).
