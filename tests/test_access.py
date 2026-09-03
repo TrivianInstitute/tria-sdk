@@ -33,6 +33,7 @@ def test_policy_must_be_actively_adopted():
     assert rel.check_policy_adoption("policy.relational-access", "1.0").outcome is GovernanceOutcome.BLOCK
 
     rel.grant_policy_authority("tria:system", "human:a", "relationship")
+    rel.register_policy("human:a", "policy.relational-access", "1.0", "relationship")
     rel.adopt_policy("human:a", "policy.relational-access", "1.0", "relationship")
     assert rel.check_policy_adoption("policy.relational-access", "1.0").outcome is GovernanceOutcome.ALLOW
 
