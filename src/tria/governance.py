@@ -36,26 +36,65 @@ class GovernanceEngine:
             return True
         return requested_purpose == bound_purpose
 
-    def require_active_consent(self, state: RelationalState, actor: str, scope: str, purpose: str | None = None) -> GovernanceDecision:
+    @staticmethod
+    def _conditions_match(bound_conditions: tuple[str, ...], satisfied_conditions: tuple[str, ...]) -> bool:
+        return set(bound_conditions).issubset(set(satisfied_conditions))
+
+    @staticmethod
+    def _expired(expires_at: datetime | None, evaluated_at: datetime) -> bool:
+        return expires_at is not None and evaluated_at >= expires_at
+
+    def require_active_consent(
+        self,
+        state: RelationalState,
+        actor: str,
+        scope: str,
+        purpose: str | None = None,
+        *,
+        satisfied_conditions: tuple[str, ...] = (),
+        evaluated_at: datetime | None = None,
+    ) -> GovernanceDecision:
+        evaluated_at = evaluated_at or utcnow()
         if (actor, scope) in state.reconsent_requirements:
-            return GovernanceDecision(GovernanceOutcome.REQUIRE_CONSENT, "core.consent.reconsent", "0.1", f"Renewed consent is required for {actor!r} scope {scope!r} after a consent-impacting policy change.")
+            return GovernanceDecision(GovernanceOutcome.REQUIRE_CONSENT, "core.consent.reconsent", "0.1", f"Renewed consent is required for {actor!r} scope {scope!r} after a consent-impacting policy change.", evaluated_at=evaluated_at)
         record = state.consent.get((actor, scope))
         if record and record.active:
+            if self._expired(record.expires_at, evaluated_at):
+                return GovernanceDecision(GovernanceOutcome.REQUIRE_CONSENT, "core.consent.expiry", "0.1", f"Consent for {actor!r} scope {scope!r} expired at {record.expires_at.isoformat()}.", evaluated_at=evaluated_at)
             if not self._purpose_matches(record.purpose, purpose):
-                return GovernanceDecision(GovernanceOutcome.REQUIRE_CONSENT, "core.consent.purpose", "0.1", f"Active consent for {actor!r} scope {scope!r} is bound to purpose {record.purpose!r}; requested purpose {purpose!r} is not authorized.")
-            return GovernanceDecision(GovernanceOutcome.ALLOW, "core.consent.active", "0.1", f"Active consent exists for {actor!r} scope {scope!r} and requested purpose.")
-        return GovernanceDecision(GovernanceOutcome.REQUIRE_CONSENT, "core.consent.active", "0.1", f"No active consent exists for {actor!r} scope {scope!r}.")
+                return GovernanceDecision(GovernanceOutcome.REQUIRE_CONSENT, "core.consent.purpose", "0.1", f"Active consent for {actor!r} scope {scope!r} is bound to purpose {record.purpose!r}; requested purpose {purpose!r} is not authorized.", evaluated_at=evaluated_at)
+            if not self._conditions_match(record.conditions, satisfied_conditions):
+                missing = sorted(set(record.conditions) - set(satisfied_conditions))
+                return GovernanceDecision(GovernanceOutcome.REQUIRE_CONSENT, "core.consent.conditions", "0.1", f"Consent conditions are not satisfied for {actor!r} scope {scope!r}: {missing!r}.", evaluated_at=evaluated_at)
+            return GovernanceDecision(GovernanceOutcome.ALLOW, "core.consent.active", "0.1", f"Active consent exists for {actor!r} scope {scope!r} with requested purpose and conditions.", evaluated_at=evaluated_at)
+        return GovernanceDecision(GovernanceOutcome.REQUIRE_CONSENT, "core.consent.active", "0.1", f"No active consent exists for {actor!r} scope {scope!r}.", evaluated_at=evaluated_at)
 
-    def require_capability(self, state: RelationalState, grantee: str, resource: str, capability: Capability, purpose: str | None = None) -> GovernanceDecision:
+    def require_capability(
+        self,
+        state: RelationalState,
+        grantee: str,
+        resource: str,
+        capability: Capability,
+        purpose: str | None = None,
+        *,
+        satisfied_conditions: tuple[str, ...] = (),
+        evaluated_at: datetime | None = None,
+    ) -> GovernanceDecision:
+        evaluated_at = evaluated_at or utcnow()
         lifecycle = self.require_lifecycle_capability(state, capability)
         if lifecycle.outcome is not GovernanceOutcome.ALLOW:
             return lifecycle
         record = state.permissions.get((grantee, resource, capability))
         if record and record.active:
+            if self._expired(record.expires_at, evaluated_at):
+                return GovernanceDecision(GovernanceOutcome.BLOCK, "core.permission.expiry", "0.1", f"{capability.value} permission for {grantee!r} on {resource!r} expired at {record.expires_at.isoformat()}.", evaluated_at=evaluated_at)
             if not self._purpose_matches(record.purpose, purpose):
-                return GovernanceDecision(GovernanceOutcome.BLOCK, "core.permission.purpose", "0.1", f"{grantee!r} has {capability.value} permission for {resource!r}, but it is bound to purpose {record.purpose!r}; requested purpose {purpose!r} is not authorized.")
-            return GovernanceDecision(GovernanceOutcome.ALLOW, "core.permission.active", "0.1", f"{grantee!r} has active {capability.value} permission for {resource!r} and requested purpose.")
-        return GovernanceDecision(GovernanceOutcome.BLOCK, "core.permission.active", "0.1", f"No active {capability.value} permission exists for {grantee!r} on {resource!r}.")
+                return GovernanceDecision(GovernanceOutcome.BLOCK, "core.permission.purpose", "0.1", f"{grantee!r} has {capability.value} permission for {resource!r}, but it is bound to purpose {record.purpose!r}; requested purpose {purpose!r} is not authorized.", evaluated_at=evaluated_at)
+            if not self._conditions_match(record.conditions, satisfied_conditions):
+                missing = sorted(set(record.conditions) - set(satisfied_conditions))
+                return GovernanceDecision(GovernanceOutcome.BLOCK, "core.permission.conditions", "0.1", f"{capability.value} permission conditions are not satisfied for {grantee!r} on {resource!r}: {missing!r}.", evaluated_at=evaluated_at)
+            return GovernanceDecision(GovernanceOutcome.ALLOW, "core.permission.active", "0.1", f"{grantee!r} has active {capability.value} permission for {resource!r} with requested purpose and conditions.", evaluated_at=evaluated_at)
+        return GovernanceDecision(GovernanceOutcome.BLOCK, "core.permission.active", "0.1", f"No active {capability.value} permission exists for {grantee!r} on {resource!r}.", evaluated_at=evaluated_at)
 
     def require_lifecycle_capability(self, state: RelationalState, capability: Capability) -> GovernanceDecision:
         allowed: dict[LifecycleState, frozenset[Capability]] = {
