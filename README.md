@@ -4,6 +4,40 @@
 
 It treats consequential relational state as explicit, attributable, contestable, revisable, governed, and auditable across time. TRIA Core does not require an AI model and makes no claim about consciousness, sentience, personhood, or phenomenological equivalence.
 
+## Deploy / integrate TRIA
+
+For developers who want to use TRIA rather than study the underlying research repositories, **this SDK is the canonical implementation entry point**.
+
+Requirements: Python 3.11+ and Git.
+
+```bash
+git clone https://github.com/TrivianInstitute/tria-sdk.git
+cd tria-sdk
+python -m venv .venv
+```
+
+Activate the environment, then install and verify:
+
+```bash
+python -m pip install --upgrade pip
+python -m pip install -e '.[dev]'
+python -m pytest -q
+```
+
+A successful test run verifies the encoded v0.1 alpha behavior. Applications can then import `tria` directly:
+
+```python
+from tria import Tria
+
+tria = Tria()
+relationship = tria.create_relationship(["human:user", "agent:demo"])
+print(relationship.state)
+```
+
+TRIA does **not** own model credentials or network transport. To connect a model, use the Runtime / adapter / `ExecutionBridge` boundary shown below and provide your own executor or provider client.
+
+The other Trivian Institute repositories remain the canonical research, theory, measurement, governance, and reference-implementation sources behind the SDK. They do not all need to be installed in order to use `tria-sdk`.
+
 ## Architectural invariant
 
 ```text
@@ -144,7 +178,7 @@ The current alpha compatibility envelope is:
 
 ## Status
 
-`0.1.0a3` is an experimental alpha intended for falsification, integration testing, interoperability testing, and architectural hardening. Passing tests establish encoded behavior only, not scientific validation, legitimate consent, legal compliance, or deployment safety.
+`0.1.0a3` is an experimental, implementation-complete alpha intended for falsification, integration testing, interoperability testing, and architectural hardening. It is deployable as a software dependency or integration boundary, but it is **not** represented as a production-certified safety system or empirically validated theory. Passing tests establish encoded behavior only, not scientific validation, legitimate consent, legal compliance, or deployment safety.
 
 The canonical architectural baseline is in [`docs/TRIA_CORE_SPEC_v0.1.1.md`](docs/TRIA_CORE_SPEC_v0.1.1.md). The current implementation-completion audit is in [`docs/TRIA_V0.1_COMPLETION_AUDIT.md`](docs/TRIA_V0.1_COMPLETION_AUDIT.md).
 
