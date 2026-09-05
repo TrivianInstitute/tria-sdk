@@ -182,6 +182,14 @@ The current alpha compatibility envelope is:
 
 The canonical architectural baseline is in [`docs/TRIA_CORE_SPEC_v0.1.1.md`](docs/TRIA_CORE_SPEC_v0.1.1.md). The current implementation-completion audit is in [`docs/TRIA_V0.1_COMPLETION_AUDIT.md`](docs/TRIA_V0.1_COMPLETION_AUDIT.md).
 
+## Fund the Public Infrastructure
+
+Help maintain public relational-governance infrastructure for increasingly persistent AI systems.
+
+Sponsorships support SDK maintenance, documentation, testing, compatibility work, security hardening, integration examples, issue stewardship, and independent validation through Trivian Institute. Sponsorship does not grant commercial-use rights or influence research findings.
+
+[**Sponsor Trivian Institute through GitHub Sponsors**](https://github.com/sponsors/TrivianInstitute) · [Review the funding policy and tiers](https://github.com/TrivianInstitute/.github/blob/main/FUNDING.md)
+
 ---
 
 ## License
