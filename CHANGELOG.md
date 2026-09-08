@@ -3,6 +3,7 @@
 ## [0.1.0a4] - 2026-09-08
 
 ### Changed
+- Rename the Python distribution from `tria-core` to `tria-sdk`; the repository remains `tria-sdk` and the import package remains `tria`.
 - Revalidate original requirements after translation under a shared local execution/write guard; reject reused execution reservations.
 - Enforce existing relationships, participant identifiers and immutable projection state; move causal ambiguity into shared governance.
 - Expose explicit trusted-host permission administration and retain documented legacy aliases.
