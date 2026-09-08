@@ -1,22 +1,22 @@
-# Alpha release-readiness gate
+# Current alpha release gate
 
-TRIA `0.1.0a3` is a release candidate, not yet a tagged public release.
+0.1.0a4 is an experimental remediation prerelease, not a production designation.
+The controlling license remains PolyForm Noncommercial License 1.0.0, as stated in
+LICENSE.md and pyproject.toml. Commercial use requires a separate written license.
+No licensing change, release publication or main-branch merge is part of this phase.
 
-A candidate is release-ready only when all of the following agree in CI:
+Required gates: original suite with explicit new-version expectations; permanent
+frozen-witness regressions; neighboring attacks; public examples and tutorial;
+clean editable installation; sdist/wheel build; clean wheel-only application;
+SQLite close/reopen; documentation-only revalidation in a fresh environment.
 
-- `tria.__version__` and `pyproject.toml` package version;
-- bundle format, event schema, and projection versions exposed by the runtime;
-- the conformance manifest version envelope;
-- every conformance fixture referenced by the manifest;
-- every required public JSON Schema;
-- wheel build, wheel reinstall, and public import smoke test.
+Package/version/constants, README, changelog, compatibility notes, manifest and
+schemas must agree. Preserve the original audit and raw witnesses. An original
+assertion may terminate by the newly specified safe exception; record this
+separately from an unchanged assertion passing. Never suppress a failure without
+an explained contract change and direct safety regression.
 
-The conformance surface is frozen for a tagged alpha. A semantic change to an immutable event, projection, replay bundle, governed capability, consent rule, lifecycle rule, or authority rule requires an explicit compatibility decision rather than silent mutation of an existing version.
-
-## Release blocker: licensing decision
-
-The repository currently declares `AGPL-3.0-only`. This audit intentionally preserves that declaration and does not create a tag or GitHub release. The final public licensing posture must be reviewed deliberately before publication, especially if TRIA is intended to support a separate commercial licensing path.
-
-## What passing this gate means
-
-Passing the release-readiness suite establishes internal consistency of the encoded alpha contract. It does not establish scientific validation, legal compliance, security certification, legitimate consent in a deployment, or fitness for production use.
+Passing proves only the tested local behavior and onboarding path. It does not
+establish production certification, security, legal compliance, scientific
+validation, legitimate consent or deployment safety. Deferred operational work
+and the exact tested commit belong in the remediation report.

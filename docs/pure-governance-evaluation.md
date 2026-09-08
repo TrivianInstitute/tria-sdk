@@ -2,7 +2,7 @@
 
 Governance evaluation and governance audit are separate operations.
 
-A read-only check answers a question about the current relational state. It must not change that state merely because the question was asked. Therefore `check_capability`, `require_consent`, `check_policy_adoption`, `check_policy_authority`, `check_lifecycle_authority`, and `check_lifecycle_transition` return deterministic decisions without appending events.
+A read-only check answers a question about the current relational state. It must not change that state merely because the question was asked. Therefore `check_capability`, `require_consent`, `check_policy_adoption`, `check_policy_authority`, `check_lifecycle_authority`, and `check_lifecycle_transition` return decisions determined by state, requirements and evaluation time without appending events.
 
 When a caller needs an auditable trace, it may explicitly call `record_governance_decision(...)`. Governed operations may do this as part of their own lifecycle. For example, runtime preparation records the lifecycle, consent, and capability decisions used to authorize or block an invocation.
 

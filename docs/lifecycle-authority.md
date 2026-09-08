@@ -43,4 +43,5 @@ This preserves the distinction between:
 
 ## Projection compatibility
 
-Lifecycle authority is now part of derived relational state and portable replay projections. The projection contract therefore advances from `0.2` to `0.3`. Event schema remains `0.1`; bundle format remains `0.1`.
+The original lifecycle-authority build advanced projection 0.2 to 0.3. That is historical.
+The current remediation uses event schema 0.2 / projection 0.5; see [compatibility](compatibility.md).

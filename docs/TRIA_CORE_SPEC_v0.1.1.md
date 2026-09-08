@@ -1,3 +1,5 @@
+> HISTORICAL conceptual pre-implementation baseline. For the current operational contract use [specification 0.1.2](TRIA_OPERATIONAL_SPEC_v0.1.2.md).
+
 # TRIA Core Specification v0.1.1 — Pre-Implementation Baseline
 
 TRIA Core is a model-agnostic governance kernel for persistent mediated relationships. The relationship is the developer-facing aggregate, while immutable relational events are the authoritative history from which current state is derived.
