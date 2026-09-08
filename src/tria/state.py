@@ -5,7 +5,9 @@ from datetime import datetime
 from typing import Iterable
 
 from .compat import CURRENT_PROJECTION_VERSION
-from .events import RelationalEvent
+from .events import RelationalEvent, verify_event_chain
+from .causality import ambiguous_permissions
+from .immutability import deep_freeze
 from .types import (
     Capability,
     Claim,
@@ -26,6 +28,8 @@ from .types import (
 class RelationalState:
     relationship_id: str
     participants: tuple[str, ...] = ()
+    history_valid: bool = False
+    ambiguous_permissions: frozenset[tuple[str, str, str]] = frozenset()
     lifecycle: LifecycleState = LifecycleState.FORMING
     consent: dict[tuple[str, str], ConsentRecord] = field(default_factory=dict)
     permissions: dict[tuple[str, str, Capability], PermissionRecord] = field(default_factory=dict)
@@ -40,11 +44,18 @@ class RelationalState:
     projection_version: str = CURRENT_PROJECTION_VERSION
 
 
+    def __post_init__(self):
+        for name in ("consent", "permissions", "lifecycle_authorities", "policy_authorities", "policy_definitions", "policy_adoptions", "reconsent_requirements", "claims", "disagreements"):
+            object.__setattr__(self, name, deep_freeze(getattr(self, name)))
+        object.__setattr__(self, "participants", tuple(self.participants))
+        object.__setattr__(self, "ambiguous_permissions", frozenset(self.ambiguous_permissions))
+
 def _optional_datetime(value: str | None) -> datetime | None:
     return datetime.fromisoformat(value) if value else None
 
 
 def reduce_events(relationship_id: str, events: Iterable[RelationalEvent]) -> RelationalState:
+    events = list(events)
     state = RelationalState(relationship_id=relationship_id)
     for event in events:
         p = event.payload
@@ -172,4 +183,9 @@ def reduce_events(relationship_id: str, events: Iterable[RelationalEvent]) -> Re
             state = replace(state, lifecycle=LifecycleState(p["to"]), last_event_id=event.event_id)
         else:
             state = replace(state, last_event_id=event.event_id)
-    return state
+    valid = bool(events) and events[0].event_type == "RelationshipCreated" and events[0].actor_id == "tria:system"
+    valid = valid and sum(e.event_type == "RelationshipCreated" for e in events) == 1
+    valid = valid and all(e.relationship_id == relationship_id for e in events) and verify_event_chain(events)
+    valid = valid and bool(state.participants) and len(set(state.participants)) == len(state.participants)
+    valid = valid and all(isinstance(p, str) and p.strip() == p and bool(p) and not p.startswith("tria:") for p in state.participants)
+    return replace(state, history_valid=bool(valid), ambiguous_permissions=ambiguous_permissions(events))

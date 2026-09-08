@@ -1,3 +1,5 @@
+from .errors import (TriaError, InputValidationError, RelationshipNotFoundError, InvalidRelationshipError, UnknownParticipantError, ConcurrentWriteError, PersistenceError, UnsupportedStoreError, UnknownResourceError, InvocationAlreadyStartedError, ExecutionError)
+from .core import HostAdministration
 from .boundary import (
     CrossBoundaryGovernanceError,
     DisclosureHandle,
@@ -78,6 +80,7 @@ from .types import (
 from .version import __version__
 
 __all__ = [
+    "TriaError", "InputValidationError", "RelationshipNotFoundError", "InvalidRelationshipError", "UnknownParticipantError", "ConcurrentWriteError", "PersistenceError", "UnsupportedStoreError", "UnknownResourceError", "InvocationAlreadyStartedError", "ExecutionError", "HostAdministration",
     "AnthropicMessagesAdapter", "BUNDLE_FORMAT_VERSION", "BundleVerification", "Capability", "CapabilityRequirement",
     "Claim", "ClaimHandle", "ClaimStatus", "CompatibilityReport", "ConsentRecord", "ConsentRequirement", "ContextItem",
     "CrossBoundaryGovernanceError", "CURRENT_BUNDLE_FORMAT_VERSION", "CURRENT_EVENT_SCHEMA_VERSION", "CURRENT_PROJECTION_VERSION",

@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 from .state import RelationalState
+from .errors import enum_field, text_field
 from .types import Capability, GovernanceDecision, GovernanceOutcome, LifecycleState, utcnow
 
 
@@ -57,6 +58,10 @@ class GovernanceEngine:
         evaluated_at = evaluated_at or utcnow()
         if (actor, scope) in state.reconsent_requirements:
             return GovernanceDecision(GovernanceOutcome.REQUIRE_CONSENT, "core.consent.reconsent", "0.1", f"Renewed consent is required for {actor!r} scope {scope!r} after a consent-impacting policy change.", evaluated_at=evaluated_at)
+        text_field(actor, "actor")
+        text_field(scope, "scope")
+        if not state.history_valid or actor not in state.participants:
+            return GovernanceDecision(GovernanceOutcome.BLOCK, "core.relationship.valid", "0.1", "Consent requires a valid relationship and registered participant.")
         record = state.consent.get((actor, scope))
         if record and record.active:
             if self._expired(record.expires_at, evaluated_at):
@@ -80,6 +85,13 @@ class GovernanceEngine:
         satisfied_conditions: tuple[str, ...] = (),
         evaluated_at: datetime | None = None,
     ) -> GovernanceDecision:
+        enum_field(capability, Capability, "capability")
+        text_field(grantee, "grantee")
+        text_field(resource, "resource")
+        if not state.history_valid or grantee not in state.participants:
+            return GovernanceDecision(GovernanceOutcome.BLOCK, "core.relationship.valid", "0.1", "Capability requires a valid relationship and registered participant.")
+        if (grantee, resource, capability.value) in state.ambiguous_permissions:
+            return GovernanceDecision(GovernanceOutcome.BLOCK, "core.permission.race", "0.1", "Permission is causally ambiguous; revocation dominates until order is established.")
         evaluated_at = evaluated_at or utcnow()
         lifecycle = self.require_lifecycle_capability(state, capability)
         if lifecycle.outcome is not GovernanceOutcome.ALLOW:
@@ -133,6 +145,8 @@ class GovernanceEngine:
         return GovernanceDecision(GovernanceOutcome.BLOCK, "core.lifecycle.transition", "0.1", f"Lifecycle transition {state.lifecycle.value} -> {to.value} is not permitted.")
 
     def require_runtime_execution(self, state: RelationalState) -> GovernanceDecision:
+        if not state.history_valid:
+            return GovernanceDecision(GovernanceOutcome.BLOCK, "core.relationship.valid", "0.1", "Execution requires a valid created relationship; inspect history and recover before use.")
         if state.lifecycle in {LifecycleState.FORMING, LifecycleState.ACTIVE, LifecycleState.RENEWING, LifecycleState.TRANSFORMING}:
             return GovernanceDecision(GovernanceOutcome.ALLOW, "core.lifecycle.runtime", "0.1", f"Runtime execution is permitted while relationship is {state.lifecycle.value}.")
         outcome = GovernanceOutcome.BLOCK if state.lifecycle is LifecycleState.DISSOLVED else GovernanceOutcome.PAUSE

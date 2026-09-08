@@ -56,6 +56,8 @@ def state_to_dict(state: RelationalState) -> dict[str, Any]:
         "relationship_id": state.relationship_id,
         "projection_version": state.projection_version,
         "participants": list(state.participants),
+        "history_valid": state.history_valid,
+        "ambiguous_permissions": [list(key) for key in sorted(state.ambiguous_permissions)],
         "lifecycle": state.lifecycle.value,
         "consent": [_portable(record) for _, record in sorted(state.consent.items(), key=lambda item: str(item[0]))],
         "permissions": [_portable(record) for _, record in sorted(state.permissions.items(), key=lambda item: str(item[0]))],
