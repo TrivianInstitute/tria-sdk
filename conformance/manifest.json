@@ -1,8 +1,8 @@
 {
-  "tria_core_spec": "0.1.1",
+  "tria_core_spec": "0.1.2",
   "bundle_format_version": "0.1",
-  "event_schema_version": "0.1",
-  "projection_version": "0.4",
+  "event_schema_version": "0.2",
+  "projection_version": "0.5",
   "required_semantics": [
     "immutable_events",
     "deep_immutable_public_values",
@@ -39,7 +39,11 @@
     "preserved_disagreement",
     "governed_runtime_context",
     "blocked_execution_does_not_reach_transport",
-    "unsupported_event_schema_fails_closed"
+    "unsupported_event_schema_fails_closed",
+    "final_authority_resolution",
+    "valid_created_relationship_required",
+    "atomic_stale_append_rejection",
+    "explicit_unknown_effect"
   ],
   "fixtures": [
     "fixtures/persistence_replay.json",

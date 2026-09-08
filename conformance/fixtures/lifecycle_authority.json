@@ -9,6 +9,6 @@
     "illegal_transition_rejected": true,
     "dissolved_terminal": true,
     "consent_does_not_change_lifecycle": true,
-    "projection_version": "0.3"
+    "projection_version": "0.5"
   }
 }

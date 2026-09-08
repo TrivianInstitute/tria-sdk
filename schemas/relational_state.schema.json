@@ -3,18 +3,115 @@
   "$id": "https://trivianinstitute.org/tria/schemas/relational_state.schema.json",
   "title": "TRIA Relational State Projection",
   "type": "object",
-  "required": ["relationship_id", "participants", "lifecycle", "projection_version"],
+  "required": [
+    "relationship_id",
+    "participants",
+    "lifecycle",
+    "projection_version",
+    "history_valid",
+    "ambiguous_permissions"
+  ],
   "properties": {
-    "relationship_id": {"type": "string", "minLength": 1},
-    "participants": {"type": "array", "items": {"type": "string"}},
-    "lifecycle": {"type": "string", "enum": ["FORMING", "ACTIVE", "RESTING", "DORMANT", "RENEWING", "TRANSFORMING", "DISSOLVING", "DISSOLVED"]},
-    "consent": {"type": "object"},
-    "permissions": {"type": "object"},
-    "policy_adoptions": {"type": "object"},
-    "claims": {"type": "object"},
-    "disagreements": {"type": "object"},
-    "last_event_id": {"type": ["string", "null"]},
-    "projection_version": {"type": "string", "minLength": 1}
+    "relationship_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "participants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "lifecycle": {
+      "type": "string",
+      "enum": [
+        "FORMING",
+        "ACTIVE",
+        "RESTING",
+        "DORMANT",
+        "RENEWING",
+        "TRANSFORMING",
+        "DISSOLVING",
+        "DISSOLVED"
+      ]
+    },
+    "consent": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "policy_adoptions": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "disagreements": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "last_event_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "projection_version": {
+      "const": "0.5"
+    },
+    "lifecycle_authorities": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "policy_authorities": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "policy_definitions": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "reconsent_requirements": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "history_valid": {
+      "type": "boolean"
+    },
+    "ambiguous_permissions": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "minItems": 3,
+        "maxItems": 3
+      }
+    }
   },
   "additionalProperties": false
 }

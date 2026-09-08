@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.1.0a4] - 2026-09-08
+
+### Changed
+- Revalidate original requirements after translation under a shared local execution/write guard; reject reused execution reservations.
+- Enforce existing relationships, participant identifiers and immutable projection state; move causal ambiguity into shared governance.
+- Expose explicit trusted-host permission administration and retain documented legacy aliases.
+- Atomically reject stale appends; enforce one live SQLite process, support local instances and :memory: lifetime.
+- Add caller-owned resource resolution, recursive transport conversion, protected adapter options, and UNKNOWN_EFFECT results.
+- Add specific input/store/execution errors and preserve actual lifecycle export denial reasons.
+- Add complete no-network tutorial, API reference, trust/concurrency contracts and permanent frozen-witness regressions.
+- Advance event schema to 0.2 and projection to 0.5; old histories/bundles are rejected without automatic migration. Bundle format stays 0.1.
+- Reconcile documentation and mark older completion notes historical. License unchanged.
+
+### Evidence
+- Frozen baseline remains 0.1.0a3 @ 463ce26b8af7d52d38796888cf5717948df1e331, NOT YET.
+- The new prerelease is an experimental local integration candidate, not production certification.
+
+
 ## [0.1.0a3] - 2026-09-03
 
 ### Added
