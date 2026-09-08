@@ -201,6 +201,14 @@ The current alpha compatibility envelope is:
 - replay bundle: `0.1`
 - Core specification: `0.1.2`
 
+## Adversarial validation
+
+TRIA maintains a frozen adversarial validation history. Claims are challenged with executable counterexamples; failures are preserved as historical evidence; remediations are rerun against the original witnesses; and unresolved properties remain explicitly marked rather than inferred as solved.
+
+The `0.1.0a3` clean-room audit returned **NOT YET**. After remediation, the `0.1.0a4` candidate earned **YES, WITH FRICTION** for independent developer adoption. These results establish tested behavior under the audited conditions, not production certification, security certification, legal compliance, or scientific validity.
+
+Historical failures are intentionally retained so future developers and AI coding agents can understand why governance checks exist and avoid reintroducing previously observed defects.
+
 ## Status
 
 `0.1.0a4` is an experimental remediation alpha intended for falsification, integration testing, interoperability testing, and architectural hardening. It is deployable as a software dependency or integration boundary, but it is **not** represented as a production-certified safety system or empirically validated theory. Passing tests establish encoded behavior only, not scientific validation, legitimate consent, legal compliance, or deployment safety.
