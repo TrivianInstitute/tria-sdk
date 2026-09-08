@@ -6,7 +6,7 @@ TRIA treats immutability as a data-structure property, not merely a dataclass at
 
 A frozen public value object must not expose nested mutable containers that can be altered after construction.
 
-Build 024 therefore deep-freezes the mutable container surfaces carried by:
+The historical Build 024 introduced these protections and the current alpha also freezes RelationalState nested mappings. TRIA therefore deep-freezes the mutable container surfaces carried by:
 
 - relational event proposals and committed relational events;
 - runtime invocation requests and results;
@@ -20,8 +20,8 @@ Nested mappings become read-only mappings, mutable sequences become tuples, and 
 
 Event payload immutability is especially important because immutable events are foundational to deterministic replay and audit. A committed event payload cannot be edited in place after its hash has been computed.
 
-This hardening does **not** change canonical event hash semantics, the event schema version, the projection version, or the replay bundle format. Serialization converts frozen containers back to ordinary portable JSON structures.
+The original Build 024 did not change those versions. The current remediation explicitly advances event schema to 0.2 and projection to 0.5; see compatibility.md. Serialization converts frozen containers back to ordinary portable JSON structures.
 
 ## Boundary behavior
 
-Applications that need a mutable provider payload or metadata structure for a caller-owned transport may create a copy at the boundary. TRIA itself preserves an immutable snapshot of the authorized request and associated governance values.
+Applications that need a mutable provider payload must use ProviderRequest.to_transport_payload(), which recursively converts nested frozen containers. A shallow dict copy is insufficient. TRIA itself preserves an immutable snapshot of the authorized request and associated governance values.

@@ -4,11 +4,25 @@
 
 It treats consequential relational state as explicit, attributable, contestable, revisable, governed, and auditable across time. TRIA Core does not require an AI model and makes no claim about consciousness, sentience, personhood, or phenomenological equivalence.
 
+## Build something real
+
+Start with the [Quickstart](docs/quickstart.md) and the
+[complete no-network governed assistant](docs/complete-governed-application.md).
+It creates two participants, grants both consent and permission, executes once,
+revokes each independently, proves subsequent attempts are blocked, and reopens
+its SQLite history. No research-paper reading or provider credentials are needed.
+
+The safest entry point is `Tria` / `Relationship` with `ExecutionBridge.execute`.
+Use lower-level components only after reading the
+[modularity and trusted-host contract](docs/modularity-and-trust.md).
+TRIA checks the requirements your host declares; your host authenticates actors,
+controls administrative access, supplies external data, and owns network effects.
+
 ## Deploy / integrate TRIA
 
 For developers who want to use TRIA rather than study the underlying research repositories, **this SDK is the canonical implementation entry point**.
 
-Requirements: Python 3.11+ and Git.
+Requirements: Python 3.11+ and Git. CI targets 3.11/3.12. File-backed SQLite currently requires POSIX process locks; see [Persistence](docs/persistence.md).
 
 ```bash
 git clone https://github.com/TrivianInstitute/tria-sdk.git
@@ -16,7 +30,7 @@ cd tria-sdk
 python -m venv .venv
 ```
 
-Activate the environment, then install and verify:
+Activate with `source .venv/bin/activate` on POSIX, or `.venv\Scripts\Activate.ps1` in PowerShell, then install and verify:
 
 ```bash
 python -m pip install --upgrade pip
@@ -37,6 +51,17 @@ print(relationship.state)
 TRIA does **not** own model credentials or network transport. To connect a model, use the Runtime / adapter / `ExecutionBridge` boundary shown below and provide your own executor or provider client.
 
 The other Trivian Institute repositories remain the canonical research, theory, measurement, governance, and reference-implementation sources behind the SDK. They do not all need to be installed in order to use `tria-sdk`.
+
+## Developer path
+
+[Quickstart](docs/quickstart.md) → [Complete governed application](docs/complete-governed-application.md)
+→ [Concept/operation glossary](docs/glossary.md) → [Execution boundary](docs/execution-bridge.md)
+→ [Persistence](docs/persistence.md) → [Modularity and trust](docs/modularity-and-trust.md)
+→ [API reference](docs/api-reference.md).
+
+External data and transport: [Resource resolution](docs/resource-resolution.md) and
+[Provider payload conversion](docs/provider-adapters.md). The repository is
+`tria-sdk`, its distribution is `tria-core`, and its import is `tria`.
 
 ## Architectural invariant
 
@@ -113,28 +138,28 @@ print(rel.audit())
 TRIA can prepare an invocation, filter context according to relationship permissions, translate it for a provider, and hand it to a caller-owned executor. A blocked or paused plan never reaches the executor.
 
 ```python
-from tria import (
-    Capability,
-    ExecutionBridge,
-    InvocationRequest,
-    OpenAIResponsesAdapter,
-    Runtime,
-    Tria,
-)
+from tria import (Tria, EpistemicType, Capability, CapabilityRequirement,
+                  ConsentRequirement, InvocationRequest, ExecutionBridge,
+                  OpenAIResponsesAdapter)
 
-tria = Tria()
-rel = tria.create_relationship(["human:user", "agent:demo"])
-rel.grant_permission("human:user", "agent:demo", "context:profile", Capability.READ)
-
-bridge = ExecutionBridge(Runtime())
+rel = Tria().create_relationship(["human:user", "agent:demo"])
+claim = rel.register_claim("human:user", EpistemicType.OBSERVATION,
+                           "Meetings after 10 AM.", source_refs=["user:preference"])
+resource = f"claim:{claim.claim_id}"
+rel.grant_consent("human:user", "persistent_context")
+rel.admin.grant_permission("human:user", "agent:demo", resource, Capability.READ)
 request = InvocationRequest(
-    requested_by="agent:demo",
-    action="Help with the current task.",
-    target="model",
+    requested_by="agent:demo", action="Read the scheduling preference.", target="local",
+    context_resources=(resource,),
+    requirements=(CapabilityRequirement(resource, Capability.READ),),
+    consent_requirements=(ConsentRequirement("human:user", "persistent_context"),),
 )
-
-receipt = bridge.prepare(rel, request, OpenAIResponsesAdapter(), model="example-model")
-print(receipt.provider_request)
+receipt = ExecutionBridge().execute(
+    rel, request, OpenAIResponsesAdapter(),
+    lambda wire: {"id": "local:result", "status": "completed"}, model="local-mock",
+)
+assert receipt.executed
+print(receipt.result.status)
 ```
 
 Adapters perform translation only. Applications remain responsible for actual network execution and credentials.
@@ -170,17 +195,17 @@ python -m build
 
 The current alpha compatibility envelope is:
 
-- package: `0.1.0a3`
-- event schema: `0.1`
-- projection: `0.4`
+- package: `0.1.0a4`
+- event schema: `0.2`
+- projection: `0.5`
 - replay bundle: `0.1`
-- Core specification: `0.1.1`
+- Core specification: `0.1.2`
 
 ## Status
 
-`0.1.0a3` is an experimental, implementation-complete alpha intended for falsification, integration testing, interoperability testing, and architectural hardening. It is deployable as a software dependency or integration boundary, but it is **not** represented as a production-certified safety system or empirically validated theory. Passing tests establish encoded behavior only, not scientific validation, legitimate consent, legal compliance, or deployment safety.
+`0.1.0a4` is an experimental remediation alpha intended for falsification, integration testing, interoperability testing, and architectural hardening. It is deployable as a software dependency or integration boundary, but it is **not** represented as a production-certified safety system or empirically validated theory. Passing tests establish encoded behavior only, not scientific validation, legitimate consent, legal compliance, or deployment safety.
 
-The canonical architectural baseline is in [`docs/TRIA_CORE_SPEC_v0.1.1.md`](docs/TRIA_CORE_SPEC_v0.1.1.md). The current implementation-completion audit is in [`docs/TRIA_V0.1_COMPLETION_AUDIT.md`](docs/TRIA_V0.1_COMPLETION_AUDIT.md).
+The current operational contract is [specification 0.1.2](docs/TRIA_OPERATIONAL_SPEC_v0.1.2.md). See [compatibility](docs/compatibility.md) before opening old data. The pre-remediation audit applies only to 0.1.0a3 at `463ce26b8af7d52d38796888cf5717948df1e331`; its NOT YET result remains historical evidence. No production readiness is implied by this prerelease.
 
 ## Fund the Public Infrastructure
 

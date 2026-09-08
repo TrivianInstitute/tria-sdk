@@ -12,4 +12,4 @@ Lifecycle outcomes also retain their meaning in the invocation audit trail:
 
 `PAUSE` and `BLOCK` are intentionally distinct. A paused relationship is not equivalent to a prohibited or dissolved relationship; it represents an operational state in which execution should wait without erasing the possibility of continuation.
 
-This build changes no event schema, projection version, or bundle format. It aligns Runtime with governance semantics already present in Core.
+That historical build changed no event schema, projection version, or bundle format. The current alpha adds core floors and a final bridge evaluation; see execution-bridge.md and compatibility.md. It aligns Runtime with governance semantics already present in Core.

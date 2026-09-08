@@ -56,6 +56,8 @@ def state_to_dict(state: RelationalState) -> dict[str, Any]:
         "relationship_id": state.relationship_id,
         "projection_version": state.projection_version,
         "participants": list(state.participants),
+        "history_valid": state.history_valid,
+        "ambiguous_permissions": [list(key) for key in sorted(state.ambiguous_permissions)],
         "lifecycle": state.lifecycle.value,
         "consent": [_portable(record) for _, record in sorted(state.consent.items(), key=lambda item: str(item[0]))],
         "permissions": [_portable(record) for _, record in sorted(state.permissions.items(), key=lambda item: str(item[0]))],
@@ -159,7 +161,7 @@ def export_replay_bundle(
     )
     if decision.outcome is not GovernanceOutcome.ALLOW:
         raise ReplayExportError(
-            f"{actor!r} cannot export full replay history without active DISCLOSE authority on {resource!r}."
+            f"Replay export denied: {decision.reason}"
         )
     return _build_replay_bundle(relationship)
 
@@ -245,7 +247,12 @@ def verify_replay_bundle(bundle: ReplayBundle | dict[str, Any]) -> BundleVerific
     if not chain_valid:
         return _invalid("Event hash chain is invalid.", event_count=len(events), relationship_valid=True)
 
-    state = reduce_events(relationship_id, events)
+    try:
+        state = reduce_events(relationship_id, events)
+    except (KeyError, TypeError, ValueError, AttributeError):
+        return _invalid("Event payload cannot be projected; verify required fields and enum values.", event_count=len(events))
+    if not state.history_valid:
+        return _invalid("Relationship history is not valid for operation.", event_count=len(events), chain_valid=True)
     expected_projection = state_to_dict(state)
     expected_digest = projection_digest(state)
     projection_valid = (

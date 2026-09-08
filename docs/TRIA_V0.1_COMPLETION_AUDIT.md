@@ -1,3 +1,5 @@
+> HISTORICAL: pre-remediation completion note for 0.1.0a3. Its version and licensing statements reflect that note and are not current instructions. The controlling license is LICENSE.md (PolyForm Noncommercial); follow [current release notes](release-readiness.md) and [Quickstart](quickstart.md). Historical body preserved below. This is not the separate frozen clean-room audit.
+
 # TRIA v0.1 Alpha Completion Audit
 
 Status: implementation-complete candidate for the current Python alpha surface.

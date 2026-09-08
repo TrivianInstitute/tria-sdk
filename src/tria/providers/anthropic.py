@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .base import ProviderRequest, ProviderResponse, require_allowed_plan
+from .base import ProviderTranslationError, ProviderRequest, ProviderResponse, require_allowed_plan, validate_options
 from ..runtime import InvocationPlan
 
 
@@ -16,6 +16,9 @@ class AnthropicMessagesAdapter:
 
     def translate(self, plan: InvocationPlan, *, model: str, **options: Any) -> ProviderRequest:
         require_allowed_plan(plan)
+        validate_options(options, {"max_tokens", "temperature", "top_p", "top_k", "stop_sequences"})
+        if not isinstance(options.get("max_tokens", 1024), int) or isinstance(options.get("max_tokens", 1024), bool) or options.get("max_tokens", 1024) <= 0:
+            raise ProviderTranslationError("max_tokens must be a positive integer.")
         system = None
         if plan.context:
             system = _context_text(plan)
@@ -32,7 +35,7 @@ class AnthropicMessagesAdapter:
     def normalize_response(self, request_id: str, response: Any) -> ProviderResponse:
         response_id = _get(response, "id")
         stop_reason = _get(response, "stop_reason")
-        status = "completed" if stop_reason else "unknown"
+        status = "COMPLETED" if response_id and stop_reason in {"end_turn", "max_tokens", "stop_sequence", "tool_use"} else "UNKNOWN_EFFECT"
         return ProviderResponse(
             provider=self.provider_name,
             request_id=request_id,

@@ -7,7 +7,7 @@ The reference implementation applies these defaults:
 - **FORMING / ACTIVE / RENEWING / TRANSFORMING** — capabilities may be evaluated normally.
 - **RESTING** — READ and STORE may continue; ACT, DISCLOSE, DERIVE, and DELEGATE are blocked.
 - **DORMANT** — only READ may continue.
-- **DISSOLVING** — only READ may continue so participants can inspect and export governed history while new action and derivation stop.
+- **DISSOLVING** — only READ may continue for inspection. Full replay export requires DISCLOSE and is blocked in this state. Return to ACTIVE under lifecycle authority before exporting; local host audit remains available.
 - **DISSOLVED** — all governed capabilities are blocked. Historical audit/replay remains available because audit is not an operational capability grant.
 
 Runtime execution is permitted only in FORMING, ACTIVE, RENEWING, and TRANSFORMING. RESTING, DORMANT, and DISSOLVING return `PAUSE`; DISSOLVED returns `BLOCK`.

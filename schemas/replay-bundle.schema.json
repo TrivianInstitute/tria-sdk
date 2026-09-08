@@ -19,7 +19,7 @@
     "projection_version": {"type": "string"},
     "events": {
       "type": "array",
-      "items": {"$ref": "event.schema.json"}
+      "items": {"$ref": "relational_event.schema.json"}
     },
     "projection": {"type": "object"},
     "projection_sha256": {
