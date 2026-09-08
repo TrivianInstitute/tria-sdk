@@ -2,7 +2,7 @@
 
 **TRIA SDK** is a model-agnostic governance kernel and execution boundary for persistent mediated relationships.
 
-It treats consequential relational state as explicit, attributable, contestable, revisable, governed, and auditable across time. TRIA Core does not require an AI model and makes no claim about consciousness, sentience, personhood, or phenomenological equivalence.
+It treats consequential relational state as explicit, attributable, contestable, revisable, governed, and auditable across time. TRIA SDK does not require an AI model and makes no claim about consciousness, sentience, personhood, or phenomenological equivalence.
 
 ## Build something real
 
@@ -60,8 +60,8 @@ The other Trivian Institute repositories remain the canonical research, theory, 
 → [API reference](docs/api-reference.md).
 
 External data and transport: [Resource resolution](docs/resource-resolution.md) and
-[Provider payload conversion](docs/provider-adapters.md). The repository is
-`tria-sdk`, its distribution is `tria-core`, and its import is `tria`.
+[Provider payload conversion](docs/provider-adapters.md). The repository and Python distribution are both
+`tria-sdk`; the import package remains `tria`.
 
 ## Architectural invariant
 
@@ -106,7 +106,7 @@ The current alpha implements:
 
 TRIA does **not** own API credentials, network transport, retries, provider SDK clients, RAG, vector memory, agent orchestration, federation, biometrics, dashboards, or metaphysical claims.
 
-## Core example
+## SDK example
 
 ```python
 from tria import Tria, EpistemicType
@@ -199,7 +199,7 @@ The current alpha compatibility envelope is:
 - event schema: `0.2`
 - projection: `0.5`
 - replay bundle: `0.1`
-- Core specification: `0.1.2`
+- operational specification: `0.1.2`
 
 ## Status
 
