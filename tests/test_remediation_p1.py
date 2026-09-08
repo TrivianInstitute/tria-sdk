@@ -154,3 +154,25 @@ def test_old_envelope_rejected_explicitly():
     assert not check_compatibility('0.1',projection_version='0.4',bundle_format_version='0.1').supported
     with pytest.raises(SchemaCompatibilityError):
         RelationalEvent.commit(EventProposal('old','RelationshipCreated','tria:system',{'participants':['human:a']},1,schema_version='0.1'),None)
+
+
+def test_none_cannot_be_promoted_by_custom_normalizer():
+    class Optimistic(OpenAIResponsesAdapter):
+        def normalize_response(self,rid,native):return ProviderResponse('custom',rid,'COMPLETED')
+    out=ExecutionBridge().execute(relationship(),request(),Optimistic(),lambda p:None,model='mock')
+    assert out.result.status=='UNKNOWN_EFFECT'
+
+
+def test_interrupted_sqlite_batch_rolls_back(tmp_path,monkeypatch):
+    with SQLiteEventStore(tmp_path/'interrupted.db') as store:
+        r=Tria(store).create_relationship(['human:a']);root=r.events[-1]
+        event=RelationalEvent.commit(EventProposal(r.relationship_id,'ConsentGranted','human:a',{'actor':'human:a','scope':'scope'},1),root.event_hash)
+        original=RelationalEvent.to_dict
+        def interrupt(self):
+            if self.event_id==event.event_id:raise KeyboardInterrupt()
+            return original(self)
+        monkeypatch.setattr(RelationalEvent,'to_dict',interrupt)
+        with pytest.raises(KeyboardInterrupt):store.append_many([event])
+        assert len(r.events)==1 and r.audit()['chain_valid']
+        monkeypatch.setattr(RelationalEvent,'to_dict',original)
+        store.append(event);assert len(r.events)==2

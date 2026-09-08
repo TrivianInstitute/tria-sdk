@@ -92,7 +92,8 @@ class ExecutionBridge:
                     if inspect.iscoroutine(native):
                         native.close()
                     raise InputValidationError("Async executor response is unsupported; use a synchronous executor.")
-                response = adapter.normalize_response(request.request_id, native)
+                response = (ProviderResponse(prepared.provider_request.provider, request.request_id, "UNKNOWN_EFFECT")
+                    if native is None else adapter.normalize_response(request.request_id, native))
                 if not isinstance(response, ProviderResponse) or response.request_id != request.request_id:
                     raise InputValidationError("Normalizer must return a ProviderResponse with the original request_id.")
                 result = response.to_invocation_result()
