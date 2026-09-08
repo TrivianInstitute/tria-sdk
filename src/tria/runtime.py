@@ -7,7 +7,7 @@ from uuid import uuid4
 
 from .core import Relationship
 from .governance import GovernanceEngine
-from .errors import InputValidationError, UnknownResourceError, text_field, enum_field
+from .errors import InputValidationError, UnknownResourceError, text_field, enum_field, conditions_field, content_field
 from .immutability import deep_freeze
 from .types import Capability, GovernanceDecision, GovernanceOutcome
 
@@ -22,7 +22,7 @@ class CapabilityRequirement:
     def __post_init__(self) -> None:
         text_field(self.resource, "resource")
         enum_field(self.capability, Capability, "capability")
-        object.__setattr__(self, "satisfied_conditions", tuple(self.satisfied_conditions))
+        object.__setattr__(self, "satisfied_conditions", conditions_field(self.satisfied_conditions, "satisfied_conditions"))
         if self.purpose is not None:
             text_field(self.purpose, "purpose")
         for condition in self.satisfied_conditions:
@@ -39,7 +39,7 @@ class ConsentRequirement:
     def __post_init__(self) -> None:
         text_field(self.actor, "actor")
         text_field(self.scope, "scope")
-        object.__setattr__(self, "satisfied_conditions", tuple(self.satisfied_conditions))
+        object.__setattr__(self, "satisfied_conditions", conditions_field(self.satisfied_conditions, "satisfied_conditions"))
         if self.purpose is not None:
             text_field(self.purpose, "purpose")
         for condition in self.satisfied_conditions:
@@ -59,7 +59,10 @@ class InvocationRequest:
     action_ref: str | None = None
 
     def __post_init__(self) -> None:
-        for name in ("requested_by", "action", "target", "request_id"):
+        content_field(self.action, "action")
+        if not isinstance(self.metadata, Mapping):
+            raise InputValidationError("metadata must be a mapping.")
+        for name in ("requested_by", "target", "request_id"):
             text_field(getattr(self, name), name)
         for name, kind in (("context_resources", str), ("requirements", CapabilityRequirement), ("consent_requirements", ConsentRequirement)):
             values = getattr(self, name)
@@ -81,6 +84,7 @@ class ContextItem:
     provenance: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
+        text_field(self.resource, "resource")
         object.__setattr__(self, "value", deep_freeze(self.value))
         object.__setattr__(self, "provenance", tuple(self.provenance))
 

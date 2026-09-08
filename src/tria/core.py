@@ -5,7 +5,7 @@ from datetime import datetime
 import hashlib
 from uuid import uuid4
 
-from .errors import (RelationshipNotFoundError, InvalidRelationshipError, UnknownParticipantError, UnsupportedStoreError, InputValidationError, text_field, enum_field)
+from .errors import (RelationshipNotFoundError, InvalidRelationshipError, UnknownParticipantError, UnsupportedStoreError, InputValidationError, text_field, enum_field, conditions_field, content_field)
 from .events import EventProposal, RelationalEvent, verify_event_chain
 from .governance import GovernanceEngine
 from .state import RelationalState, reduce_events
@@ -41,8 +41,10 @@ class ClaimHandle:
 def _expiry_value(expires_at: datetime | None) -> str | None:
     if expires_at is None:
         return None
+    if not isinstance(expires_at, datetime):
+        raise InputValidationError("expires_at must be a timezone-aware datetime or None.")
     if expires_at.tzinfo is None or expires_at.utcoffset() is None:
-        raise ValueError("expires_at must be timezone-aware.")
+        raise InputValidationError("expires_at must be timezone-aware.")
     return expires_at.isoformat()
 
 
@@ -108,6 +110,9 @@ class Relationship:
     def grant_consent(self, actor: str, scope: str, purpose: str | None = None, *, expires_at: datetime | None = None, conditions: tuple[str, ...] = ()) -> RelationalEvent:
         self._participant(actor)
         text_field(scope, "scope")
+        if purpose is not None:
+            text_field(purpose, "purpose")
+        conditions = conditions_field(conditions)
         return self._commit("ConsentGranted", actor, {
             "actor": actor, "scope": scope, "purpose": purpose,
             "expires_at": _expiry_value(expires_at), "conditions": list(conditions),
@@ -124,6 +129,9 @@ class Relationship:
         self._participant(grantee)
         text_field(resource, "resource")
         enum_field(capability, Capability, "capability")
+        if purpose is not None:
+            text_field(purpose, "purpose")
+        conditions = conditions_field(conditions)
         return self._commit("PermissionGranted", granted_by, {
             "granted_by": granted_by, "grantee": grantee, "resource": resource,
             "capability": capability.value, "purpose": purpose,
@@ -134,6 +142,8 @@ class Relationship:
         self._participant(delegated_by)
         self._participant(grantee)
         enum_field(capability, Capability, "capability")
+        conditions = conditions_field(conditions)
+        satisfied_conditions = conditions_field(satisfied_conditions, "satisfied_conditions")
         decision = self.check_capability(delegated_by, resource, Capability.DELEGATE, purpose=purpose, satisfied_conditions=satisfied_conditions)
         self.record_governance_decision(
             decision,
@@ -239,7 +249,7 @@ class Relationship:
     def register_claim(self, actor: str, epistemic_type: EpistemicType, content: str, *, derived_from: list[str] | None = None, source_refs: list[str] | None = None) -> ClaimHandle:
         self._participant(actor)
         enum_field(epistemic_type, EpistemicType, "epistemic_type")
-        text_field(content, "content")
+        content_field(content, "content")
         derived_from = derived_from or []
         source_refs = source_refs or []
         if epistemic_type is EpistemicType.OBSERVATION and not source_refs:
@@ -256,6 +266,7 @@ class Relationship:
         return self._commit("ClaimDisputed", actor, {"claim_id": claim_id, "alternative": alternative})
 
     def check_lifecycle_transition(self, to: LifecycleState) -> GovernanceDecision:
+        enum_field(to, LifecycleState, "lifecycle")
         return self._governance.require_lifecycle_transition(self.state, to)
 
     def transition(self, actor: str, to: LifecycleState) -> RelationalEvent:

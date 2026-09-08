@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import inspect
 from typing import Any, Callable, Protocol
 
 from .core import Relationship
@@ -55,13 +56,14 @@ class ExecutionBridge:
         return InvocationPlan(request, d.outcome, (d,), reason=d.reason)
 
     def execute(self, relationship, request, adapter, executor, *, model, **options):
-        if not callable(executor):
+        if not callable(executor) or inspect.iscoroutinefunction(executor):
             raise InputValidationError("executor must be a synchronous callable accepting ProviderRequest.")
         prepared = self.prepare(relationship, request, adapter, model=model, **options)
         if not prepared.plan.allowed:
             return prepared
         with relationship.execution_guard():
             if any(e.event_type == "InvocationExecutionReserved" and e.payload.get("request_id") == request.request_id for e in relationship.events):
+                relationship.record_invocation_resolution(request.requested_by, request.request_id, "BLOCKED", reason="Duplicate execution reservation; reconcile the earlier attempt.")
                 raise InvocationAlreadyStartedError("This request_id already reserved an execution attempt; reconcile it before creating a new attempt.")
             relationship._commit("InvocationExecutionReserved", "tria:governance", {"request_id": request.request_id, "requested_by": request.requested_by})
             before = tuple(e.event_id for e in relationship.events)
@@ -86,7 +88,13 @@ class ExecutionBridge:
             final = InvocationPlan(request, final.outcome, final.decisions, prepared.plan.context, final.reason)
             try:
                 native = executor(prepared.provider_request)
+                if inspect.isawaitable(native):
+                    if inspect.iscoroutine(native):
+                        native.close()
+                    raise InputValidationError("Async executor response is unsupported; use a synchronous executor.")
                 response = adapter.normalize_response(request.request_id, native)
+                if not isinstance(response, ProviderResponse) or response.request_id != request.request_id:
+                    raise InputValidationError("Normalizer must return a ProviderResponse with the original request_id.")
                 result = response.to_invocation_result()
             except Exception:
                 result = InvocationResult(request.request_id, "executor:host", "UNKNOWN_EFFECT")

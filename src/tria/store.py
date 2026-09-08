@@ -10,6 +10,7 @@ import threading
 from typing import Iterable, Protocol
 
 from .events import RelationalEvent, verify_event_chain
+from .compat import require_supported_event_schema
 from .errors import ConcurrentWriteError, PersistenceError, UnsupportedStoreError
 
 
@@ -27,6 +28,7 @@ def _validate_append(prior, events):
         raise PersistenceError('Stored chain is invalid; inspect audit and recover from verified history.')
     ids = {e.event_id for e in history}
     for event in events:
+        require_supported_event_schema(event.schema_version)
         expected = history[-1].event_hash if history else None
         sequence = 1 + max((e.actor_sequence for e in history if e.actor_id == event.actor_id), default=0)
         if event.event_id in ids or event.previous_event_hash != expected or event.actor_sequence != sequence:
@@ -155,7 +157,7 @@ class SQLiteEventStore:
                 conn.executemany('INSERT INTO events(event_id,relationship_id,event_json) VALUES (?,?,?)',
                     [(e.event_id,e.relationship_id,json.dumps(e.to_dict(),sort_keys=True,separators=(',',':'))) for e in events])
                 conn.execute('COMMIT')
-            except Exception:
+            except BaseException:
                 conn.execute('ROLLBACK')
                 raise
 

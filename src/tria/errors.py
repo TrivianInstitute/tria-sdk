@@ -46,3 +46,17 @@ def enum_field(value, kind, name):
     if not isinstance(value, kind):
         raise InputValidationError(f'{name} must be a {kind.__name__} enum member; construct it from a supported value first.')
     return value
+
+
+def conditions_field(values, name="conditions"):
+    if not isinstance(values, (tuple, list)):
+        raise InputValidationError(f"{name} must be a tuple or list of condition labels.")
+    for value in values:
+        text_field(value, "condition")
+    return tuple(values)
+
+
+def content_field(value, name):
+    if not isinstance(value, str) or not value.strip():
+        raise InputValidationError(f"{name} must be a non-empty text string.")
+    return value

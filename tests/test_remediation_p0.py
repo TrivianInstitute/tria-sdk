@@ -148,3 +148,31 @@ def test_store_without_execution_guard_fails_explicitly():
     r=Tria(LegacyStore()).create_relationship(['human:a'])
     with pytest.raises(UnsupportedStoreError):
         ExecutionBridge().execute(r,InvocationRequest('human:a','do','local'),OpenAIResponsesAdapter(),lambda p:None,model='mock')
+
+
+def test_consent_scope_narrows_before_handoff():
+    r,q=scenario()
+    def narrow():
+        r.revoke_consent('human:a','scope')
+        r.grant_consent('human:a','scope:narrower')
+    result,calls=run_mutation(r,q,narrow)
+    assert not calls and not result.plan.allowed
+
+
+def test_final_check_after_audit_callback_revalidates_expiry(monkeypatch):
+    import tria.governance as governance
+    now=datetime.now(timezone.utc)
+    monkeypatch.setattr(governance,'utcnow',lambda:now)
+    class ClockStore(InMemoryEventStore):
+        final=False
+        def append(self,event):
+            super().append(event)
+            if event.event_type=='GovernanceEvaluated' and event.payload.get('operation')=='execution.final':
+                self.final=True
+            if self.final and event.event_type=='InvocationResolved':
+                monkeypatch.setattr(governance,'utcnow',lambda:now+timedelta(seconds=2))
+    r=Tria(ClockStore()).create_relationship(['human:a','agent:b'])
+    r.admin.grant_permission('human:a','agent:b','x',Capability.ACT,expires_at=now+timedelta(seconds=1))
+    q=InvocationRequest('agent:b','act','local',requirements=(CapabilityRequirement('x',Capability.ACT),))
+    calls=[];out=ExecutionBridge().execute(r,q,OpenAIResponsesAdapter(),lambda p:calls.append(p),model='mock')
+    assert not calls and 'expired' in out.plan.reason

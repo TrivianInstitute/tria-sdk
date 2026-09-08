@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 from .state import RelationalState
-from .errors import enum_field, text_field
+from .errors import enum_field, text_field, conditions_field
 from .types import Capability, GovernanceDecision, GovernanceOutcome, LifecycleState, utcnow
 
 
@@ -55,6 +55,9 @@ class GovernanceEngine:
         satisfied_conditions: tuple[str, ...] = (),
         evaluated_at: datetime | None = None,
     ) -> GovernanceDecision:
+        satisfied_conditions = conditions_field(satisfied_conditions, "satisfied_conditions")
+        if purpose is not None:
+            text_field(purpose, "purpose")
         evaluated_at = evaluated_at or utcnow()
         if (actor, scope) in state.reconsent_requirements:
             return GovernanceDecision(GovernanceOutcome.REQUIRE_CONSENT, "core.consent.reconsent", "0.1", f"Renewed consent is required for {actor!r} scope {scope!r} after a consent-impacting policy change.", evaluated_at=evaluated_at)
@@ -92,6 +95,9 @@ class GovernanceEngine:
             return GovernanceDecision(GovernanceOutcome.BLOCK, "core.relationship.valid", "0.1", "Capability requires a valid relationship and registered participant.")
         if (grantee, resource, capability.value) in state.ambiguous_permissions:
             return GovernanceDecision(GovernanceOutcome.BLOCK, "core.permission.race", "0.1", "Permission is causally ambiguous; revocation dominates until order is established.")
+        satisfied_conditions = conditions_field(satisfied_conditions, "satisfied_conditions")
+        if purpose is not None:
+            text_field(purpose, "purpose")
         evaluated_at = evaluated_at or utcnow()
         lifecycle = self.require_lifecycle_capability(state, capability)
         if lifecycle.outcome is not GovernanceOutcome.ALLOW:

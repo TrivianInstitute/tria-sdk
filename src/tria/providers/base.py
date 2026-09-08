@@ -4,7 +4,9 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 
-from ..immutability import deep_freeze
+import json
+from ..immutability import deep_freeze, deep_thaw
+from ..errors import InputValidationError, text_field
 from ..runtime import InvocationPlan, InvocationResult
 
 
@@ -22,6 +24,14 @@ class ProviderRequest:
     def __post_init__(self) -> None:
         object.__setattr__(self, "payload", deep_freeze(self.payload))
         object.__setattr__(self, "metadata", deep_freeze(self.metadata))
+
+
+    def to_transport_payload(self) -> dict[str, Any]:
+        """Detached JSON-ready payload; never mutates the authorized snapshot."""
+        try:
+            return json.loads(json.dumps(deep_thaw(self.payload), allow_nan=False))
+        except (TypeError, ValueError):
+            raise ProviderTranslationError("Transport payload must contain JSON-compatible values; remove unsupported host configuration.") from None
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,3 +66,8 @@ class ProviderAdapter(Protocol):
 def require_allowed_plan(plan: InvocationPlan) -> None:
     if not plan.allowed:
         raise ProviderTranslationError("Blocked invocation plans cannot be translated for provider execution.")
+
+
+def validate_options(options, allowed):
+    if set(options) - set(allowed):
+        raise ProviderTranslationError("Unsupported adapter option; prompt/context overrides are prohibited. Use documented host configuration fields only.")

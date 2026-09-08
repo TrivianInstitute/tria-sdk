@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .base import ProviderRequest, ProviderResponse, require_allowed_plan
+from .base import ProviderRequest, ProviderResponse, require_allowed_plan, validate_options
 from ..runtime import InvocationPlan
 
 
@@ -16,6 +16,7 @@ class OpenAIResponsesAdapter:
 
     def translate(self, plan: InvocationPlan, *, model: str, **options: Any) -> ProviderRequest:
         require_allowed_plan(plan)
+        validate_options(options, {"max_output_tokens", "temperature", "top_p", "seed", "store"})
         context = [
             {
                 "resource": item.resource,
@@ -35,7 +36,10 @@ class OpenAIResponsesAdapter:
 
     def normalize_response(self, request_id: str, response: Any) -> ProviderResponse:
         response_id = _get(response, "id")
-        status = _get(response, "status") or "completed"
+        native_status = _get(response, "status")
+        status = {"completed": "COMPLETED", "failed": "FAILED", "cancelled": "FAILED"}.get(native_status, "UNKNOWN_EFFECT")
+        if not response_id:
+            status = "UNKNOWN_EFFECT"
         return ProviderResponse(
             provider=self.provider_name,
             request_id=request_id,
