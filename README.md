@@ -199,7 +199,7 @@ The current alpha compatibility envelope is:
 - event schema: `0.2`
 - projection: `0.5`
 - replay bundle: `0.1`
-- operational specification: `0.1.2`
+- Core specification: `0.1.2`
 
 ## Status
 
