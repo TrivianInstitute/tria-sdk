@@ -4,6 +4,20 @@
 
 It treats consequential relational state as explicit, attributable, contestable, revisable, governed, and auditable across time. TRIA Core does not require an AI model and makes no claim about consciousness, sentience, personhood, or phenomenological equivalence.
 
+## Build something real
+
+Start with the [Quickstart](docs/quickstart.md) and the
+[complete no-network governed assistant](docs/complete-governed-application.md).
+It creates two participants, grants both consent and permission, executes once,
+revokes each independently, proves subsequent attempts are blocked, and reopens
+its SQLite history. No research-paper reading or provider credentials are needed.
+
+The safest entry point is `Tria` / `Relationship` with `ExecutionBridge.execute`.
+Use lower-level components only after reading the
+[modularity and trusted-host contract](docs/modularity-and-trust.md).
+TRIA checks the requirements your host declares; your host authenticates actors,
+controls administrative access, supplies external data, and owns network effects.
+
 ## Deploy / integrate TRIA
 
 For developers who want to use TRIA rather than study the underlying research repositories, **this SDK is the canonical implementation entry point**.
