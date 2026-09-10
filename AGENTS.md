@@ -31,6 +31,7 @@ Before changing behavior, inspect these files in order:
 4. `docs/compatibility.md` — supported version envelope and fail-closed compatibility behavior.
 5. `conformance/manifest.json` — required semantics and conformance fixtures.
 6. `README.md` — developer entry path, package status, and public claims.
+7. `LICENSE.md` — licensing scope, provenance, and trademark boundary.
 
 The conceptual specification is historical context. Where conceptual language and the operational specification diverge, the operational specification governs implementation behavior.
 
@@ -162,12 +163,16 @@ Do not code against planned interfaces as though they already exist.
 
 ## Machine-readable manifest
 
-See `tria-manifest.json` at repository root for the machine-readable identity, versions, capabilities, canonical contracts, boundaries, related repositories, and planned discovery interfaces.
+See `tria-manifest.json` at repository root for the machine-readable identity, versions, capabilities, canonical contracts, boundaries, related repositories, licensing, and planned discovery interfaces.
 
 ## Licensing
 
-The current repository license is PolyForm Noncommercial 1.0.0. Commercial use requires separate written permission under the repository's current licensing terms. Always consult `LICENSE.md` rather than inferring rights from this orientation file.
+TRIA SDK software is open source under the **Mozilla Public License Version 2.0 (MPL-2.0)**. Commercial use is permitted under that license. Covered source files and modifications to those covered files remain governed by MPL-2.0 when distributed. The software license includes the contributor patent grant and patent-litigation termination provisions defined by MPL-2.0.
+
+Documentation, specifications, diagrams, and research prose are licensed under **Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)** unless a specific file or third-party notice states otherwise.
+
+The licenses do not grant trademark, certification, endorsement, or official-affiliation rights. Consult `LICENSE.md`, `LICENSE-MPL-2.0.txt`, and `LICENSE-DOCUMENTATION.md` for scope and controlling terms.
 
 ## Provenance
 
-TRIA SDK is maintained by Trivian Institute. The package metadata names Sarasha Elion as author. Preserve project provenance when reproducing or transforming machine-readable descriptions of this implementation.
+TRIA SDK is maintained by Trivian Institute. The package metadata names Sarasha Elion as author. Preserve project provenance, applicable license notices, and canonical-source information when reproducing or transforming machine-readable descriptions of this implementation.
