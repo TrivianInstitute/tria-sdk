@@ -1,6 +1,7 @@
 {
   "schema": "tria.agent-comparison-experiment/0.1",
   "target": {"tria_sdk": "0.1.0a5", "diagnostic_spec": "0.1"},
+  "evaluator_policy": "tria.agent-decision-rubric/0.1",
   "protocol": {
     "conditions": ["ordinary_records", "structured_evidence", "structured_plus_tria"],
     "decision_options": ["EXECUTE", "DEFER", "REQUEST_EVIDENCE"],
