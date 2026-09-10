@@ -43,50 +43,17 @@
     "A diagnostic clear result is not an execution authorization token."
   ],
   "canonical_contracts": [
-    {
-      "path": "docs/TRIA_OPERATIONAL_SPEC_v0.1.2.md",
-      "role": "current operational contract"
-    },
-    {
-      "path": "docs/TRIA_DIAGNOSTIC_INTERFACE_v0.1.md",
-      "role": "read-only machine-facing diagnostic contract"
-    },
-    {
-      "path": "schemas/tria-diagnostic-report.v0.1.schema.json",
-      "role": "diagnostic report wire schema"
-    },
-    {
-      "path": "docs/modularity-and-trust.md",
-      "role": "trusted-host boundary"
-    },
-    {
-      "path": "docs/execution-bridge.md",
-      "role": "final governed execution handoff"
-    },
-    {
-      "path": "docs/compatibility.md",
-      "role": "compatibility and fail-closed version handling"
-    },
-    {
-      "path": "conformance/manifest.json",
-      "role": "required semantics and conformance fixtures"
-    },
-    {
-      "path": "docs/api-reference.md",
-      "role": "public developer API"
-    },
-    {
-      "path": "LICENSE.md",
-      "role": "licensing scope and provenance notice"
-    },
-    {
-      "path": "LICENSE-MPL-2.0.txt",
-      "role": "controlling software license legal text"
-    },
-    {
-      "path": "LICENSE-DOCUMENTATION.md",
-      "role": "documentation and research-material license notice"
-    }
+    {"path": "docs/TRIA_OPERATIONAL_SPEC_v0.1.2.md", "role": "current operational contract"},
+    {"path": "docs/TRIA_DIAGNOSTIC_INTERFACE_v0.1.md", "role": "read-only machine-facing diagnostic contract"},
+    {"path": "schemas/tria-diagnostic-report.v0.1.schema.json", "role": "diagnostic report wire schema"},
+    {"path": "docs/modularity-and-trust.md", "role": "trusted-host boundary"},
+    {"path": "docs/execution-bridge.md", "role": "final governed execution handoff"},
+    {"path": "docs/compatibility.md", "role": "compatibility and fail-closed version handling"},
+    {"path": "conformance/manifest.json", "role": "required semantics and conformance fixtures"},
+    {"path": "docs/api-reference.md", "role": "public developer API"},
+    {"path": "LICENSE.md", "role": "licensing scope and provenance notice"},
+    {"path": "LICENSE-MPL-2.0.txt", "role": "controlling software license legal text"},
+    {"path": "LICENSE-DOCUMENTATION.md", "role": "documentation and research-material license notice"}
   ],
   "capabilities": [
     "immutable relational events",
@@ -173,12 +140,7 @@
     "test_root": "tests",
     "conformance_root": "conformance",
     "schemas_root": "schemas",
-    "primary_entrypoints": [
-      "Tria",
-      "Relationship",
-      "diagnose",
-      "ExecutionBridge.execute"
-    ],
+    "primary_entrypoints": ["Tria", "Relationship", "diagnose", "ExecutionBridge.execute"],
     "diagnostic": {
       "module": "src/tria/diagnostic.py",
       "operation": "diagnose",
@@ -188,10 +150,7 @@
       "creates_governance_authority": false,
       "final_execution_reauthorization_required": true
     },
-    "provider_adapters": [
-      "OpenAI Responses-style translator",
-      "Anthropic Messages-style translator"
-    ]
+    "provider_adapters": ["OpenAI Responses-style translator", "Anthropic Messages-style translator"]
   },
   "verification": {
     "install": "python -m pip install -e '.[dev]'",
@@ -207,44 +166,17 @@
     "historical_adversarial_failures_preserved": true
   },
   "related_repositories": [
-    {
-      "name": "TRIA architecture",
-      "url": "https://github.com/TrivianInstitute/trivian-relational-intelligence-architecture"
-    },
-    {
-      "name": "Syzygy Rosetta",
-      "url": "https://github.com/TrivianInstitute/Syzygy-rosetta"
-    },
-    {
-      "name": "Coheronmetry",
-      "url": "https://github.com/TrivianInstitute/Coheronmetry"
-    },
-    {
-      "name": "Orthogonal Signal",
-      "url": "https://github.com/TrivianInstitute/Orthogonal-signal"
-    },
-    {
-      "name": "Trivian Resonance Lattice",
-      "url": "https://github.com/TrivianInstitute/Trivian-resonance-lattice"
-    },
-    {
-      "name": "TRIA Diachronic Sovereignty",
-      "url": "https://github.com/TrivianInstitute/tria-diachronic-sovereignty"
-    },
-    {
-      "name": "Trivian AI Resonance Key",
-      "url": "https://github.com/TrivianInstitute/Trivian-ai-resonance-key"
-    }
+    {"name": "TRIA architecture", "url": "https://github.com/TrivianInstitute/trivian-relational-intelligence-architecture"},
+    {"name": "Syzygy Rosetta", "url": "https://github.com/TrivianInstitute/Syzygy-rosetta"},
+    {"name": "Coheronmetry", "url": "https://github.com/TrivianInstitute/Coheronmetry"},
+    {"name": "Orthogonal Signal", "url": "https://github.com/TrivianInstitute/Orthogonal-signal"},
+    {"name": "Trivian Resonance Lattice", "url": "https://github.com/TrivianInstitute/Trivian-resonance-lattice"},
+    {"name": "TRIA Diachronic Sovereignty", "url": "https://github.com/TrivianInstitute/tria-diachronic-sovereignty"},
+    {"name": "Trivian AI Resonance Key", "url": "https://github.com/TrivianInstitute/Trivian-ai-resonance-key"}
   ],
   "machine_discovery": {
-    "agents_md": {
-      "status": "implemented",
-      "path": "AGENTS.md"
-    },
-    "ecosystem_llms_txt": {
-      "status": "implemented",
-      "url": "https://trivianfield.com/llms.txt"
-    },
+    "agents_md": {"status": "implemented", "path": "AGENTS.md"},
+    "ecosystem_llms_txt": {"status": "implemented", "url": "https://trivianfield.com/llms.txt"},
     "diagnostic_interface": {
       "status": "implemented",
       "operation": "tria.diagnose",
@@ -252,15 +184,9 @@
       "specification": "docs/TRIA_DIAGNOSTIC_INTERFACE_v0.1.md",
       "schema": "schemas/tria-diagnostic-report.v0.1.schema.json"
     },
-    "mcp": {
-      "status": "planned"
-    },
-    "a2a": {
-      "status": "planned"
-    },
-    "unknown_unknown_evaluations": {
-      "status": "planned"
-    }
+    "mcp": {"status": "planned"},
+    "a2a": {"status": "planned"},
+    "unknown_unknown_evaluations": {"status": "planned"}
   },
   "licensing": {
     "model": "open-source / open-knowledge",
@@ -274,11 +200,7 @@
     "sharealike_required_for_documentation_adaptations": true,
     "trademark_rights_granted": false,
     "certification_rights_granted": false,
-    "controlling_files": [
-      "LICENSE.md",
-      "LICENSE-MPL-2.0.txt",
-      "LICENSE-DOCUMENTATION.md"
-    ]
+    "controlling_files": ["LICENSE.md", "LICENSE-MPL-2.0.txt", "LICENSE-DOCUMENTATION.md"]
   },
   "machine_use": {
     "indexing_permitted_subject_to_license": true,
