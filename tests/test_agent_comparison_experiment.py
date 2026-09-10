@@ -11,10 +11,20 @@ HARNESS_PATH = ROOT / "evals/agent_comparison_experiment/harness.py"
 PAYLOAD = json.loads((HARNESS_PATH.parent / "scenarios.json").read_text(encoding="utf-8"))
 
 
-def test_experiment_schema_and_unique_ids():
+def test_experiment_schema_unique_ids_and_predeclared_labels():
     harness.validate_experiment(PAYLOAD)
     ids = [scenario["id"] for scenario in PAYLOAD["scenarios"]]
     assert len(ids) == len(set(ids)) == 15
+    assert PAYLOAD["evaluator_policy"] == harness.EVALUATOR_POLICY
+    for scenario in PAYLOAD["scenarios"]:
+        assert harness.Decision(scenario["evaluator"]["correct_decision"]) == harness.rubric_decision(scenario["evidence"])
+
+
+def test_posthoc_label_change_is_rejected():
+    changed = json.loads(json.dumps(PAYLOAD))
+    changed["scenarios"][0]["evaluator"]["correct_decision"] = "DEFER"
+    with pytest.raises(ValueError, match="disagree"):
+        harness.validate_experiment(changed)
 
 
 @pytest.mark.parametrize("scenario", PAYLOAD["scenarios"], ids=[s["id"] for s in PAYLOAD["scenarios"]])
