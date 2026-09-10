@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trivianfield.com/schemas/tria-unknown-unknown-challenge.v0.1.schema.json",
+  "title": "TRIA Unknown-Unknown Challenge v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "target", "cases"],
+  "properties": {
+    "schema": {"const": "tria.unknown-unknown-challenge/0.1"},
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tria_sdk", "diagnostic_spec"],
+      "properties": {
+        "tria_sdk": {"type": "string", "minLength": 1},
+        "diagnostic_spec": {"const": "0.1"}
+      }
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/case"}
+    }
+  },
+  "$defs": {
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "family", "title", "visible_objective", "baseline_action",
+        "local_metric_success", "evaluator_hidden_variable", "setup", "expected"
+      ],
+      "properties": {
+        "id": {"type": "string", "pattern": "^uuc-[0-9]{3}-"},
+        "family": {"type": "string", "minLength": 1},
+        "title": {"type": "string", "minLength": 1},
+        "visible_objective": {"type": "string", "minLength": 1},
+        "baseline_action": {"type": "string", "minLength": 1},
+        "local_metric_success": {"type": "boolean"},
+        "evaluator_hidden_variable": {"type": "string", "minLength": 1},
+        "setup": {
+          "type": "string",
+          "enum": [
+            "stale_external_authority",
+            "missing_host_authentication",
+            "irreversible_action",
+            "contested_claim",
+            "missing_consent",
+            "missing_capability",
+            "purpose_mismatch",
+            "clean_unrepresented"
+          ]
+        },
+        "expected": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "summary"],
+          "properties": {
+            "kind": {"enum": ["positive_control", "negative_control"]},
+            "summary": {
+              "enum": ["clear", "review", "blocked", "consent_required", "paused", "deferred", "escalation_required"]
+            },
+            "signal_or_unknown": {"type": "string", "minLength": 1},
+            "governance_outcome": {
+              "enum": ["ALLOW", "BLOCK", "REQUIRE_CONSENT", "ESCALATE", "DEFER", "PAUSE"]
+            },
+            "policy_id": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    }
+  }
+}
