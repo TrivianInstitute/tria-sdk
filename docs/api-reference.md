@@ -52,6 +52,10 @@ The initial attributable observation types are `host_authentication`,
 governance effect. Hosts remain responsible for authentication, external truth, and
 the meaning of supplied evidence.
 
+A diagnostic report is a current-state inspection only. Callers that proceed to a
+consequential action must still use the ordinary Runtime / `ExecutionBridge` path;
+the execution boundary re-evaluates current authorization.
+
 The advanced EventStore protocol requires append(event), append_many(events),
 list(relationship_id), and execution_guard() used by both writes and execution.
 Public event/state constructors are trusted infrastructure, not authenticated inputs.
