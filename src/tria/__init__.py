@@ -28,6 +28,7 @@ from .core import (
     Relationship,
     Tria,
 )
+from .diagnostic import AttributableObservation, DiagnosticReport, diagnose
 from .differentiation import (
     DifferentiationObservation,
     GenerativeCondition,
@@ -81,10 +82,10 @@ from .version import __version__
 
 __all__ = [
     "TriaError", "InputValidationError", "RelationshipNotFoundError", "InvalidRelationshipError", "UnknownParticipantError", "ConcurrentWriteError", "PersistenceError", "UnsupportedStoreError", "UnknownResourceError", "InvocationAlreadyStartedError", "ExecutionError", "HostAdministration",
-    "AnthropicMessagesAdapter", "BUNDLE_FORMAT_VERSION", "BundleVerification", "Capability", "CapabilityRequirement",
+    "AnthropicMessagesAdapter", "AttributableObservation", "BUNDLE_FORMAT_VERSION", "BundleVerification", "Capability", "CapabilityRequirement",
     "Claim", "ClaimHandle", "ClaimStatus", "CompatibilityReport", "ConsentRecord", "ConsentRequirement", "ContextItem",
     "CrossBoundaryGovernanceError", "CURRENT_BUNDLE_FORMAT_VERSION", "CURRENT_EVENT_SCHEMA_VERSION", "CURRENT_PROJECTION_VERSION",
-    "DelegationError", "DifferentiationObservation", "DisclosureHandle", "EpistemicAdmissionError", "EpistemicType", "EventProposal", "EventStore",
+    "DelegationError", "DiagnosticReport", "DifferentiationObservation", "DisclosureHandle", "EpistemicAdmissionError", "EpistemicType", "EventProposal", "EventStore",
     "ExecutionBridge", "ExecutionReceipt", "Executor", "GenerativeCondition", "GovernanceDecision", "GovernanceEngine", "GovernanceOutcome",
     "InMemoryEventStore", "InvocationPlan", "InvocationRequest", "InvocationResult", "LifecycleAuthorityError",
     "LifecycleAuthorityRecord", "LifecycleState", "LifecycleTransitionError", "OpenAIResponsesAdapter", "PermissionRecord",
@@ -92,7 +93,7 @@ __all__ = [
     "PolicyDefinitionRecord", "ProviderAdapter", "ProviderRequest", "ProviderResponse", "ProviderTranslationError",
     "ReconsentRequirement", "RelationalEvent", "RelationalState", "Relationship", "ReplayBundle", "ReplayExportError", "ReplayImportError",
     "Runtime", "SQLiteEventStore", "SchemaCompatibilityError", "Tria", "__version__", "admit_disclosure",
-    "assess_generative_condition", "check_compatibility", "check_event_schema", "derive_from_disclosure", "disclose_reference", "export_replay_bundle",
+    "assess_generative_condition", "check_compatibility", "check_event_schema", "derive_from_disclosure", "diagnose", "disclose_reference", "export_replay_bundle",
     "import_replay_bundle", "projection_digest", "record_differentiation_observation", "replay_export_resource",
     "require_supported_compatibility", "require_supported_event_schema", "state_to_dict", "verify_event_chain", "verify_replay_bundle",
 ]
