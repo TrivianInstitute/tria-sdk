@@ -16,17 +16,9 @@ The local adapter is intentionally loopback-only and is not a production authori
 
 ## Build something real
 
-Start with the [Quickstart](docs/quickstart.md) and the
-[complete no-network governed assistant](docs/complete-governed-application.md).
-It creates two participants, grants both consent and permission, executes once,
-revokes each independently, proves subsequent attempts are blocked, and reopens
-its SQLite history. No research-paper reading or provider credentials are needed.
+Start with the [Quickstart](docs/quickstart.md) and the [complete no-network governed assistant](docs/complete-governed-application.md). It creates two participants, grants both consent and permission, executes once, revokes each independently, proves subsequent attempts are blocked, and reopens its SQLite history. No research-paper reading or provider credentials are needed.
 
-The safest execution entry point is `Tria` / `Relationship` with `ExecutionBridge.execute`.
-For read-only inspection of a proposed action, use `diagnose`. Use lower-level
-components only after reading the [modularity and trusted-host contract](docs/modularity-and-trust.md).
-TRIA checks the requirements your host declares; your host authenticates actors,
-controls administrative access, supplies external data, and owns network effects.
+The safest execution entry point is `Tria` / `Relationship` with `ExecutionBridge.execute`. For read-only inspection of a proposed action, use `diagnose`. Use lower-level components only after reading the [modularity and trusted-host contract](docs/modularity-and-trust.md). TRIA checks the requirements your host declares; your host authenticates actors, controls administrative access, supplies external data, and owns network effects.
 
 ## Deploy / integrate TRIA
 
@@ -89,10 +81,23 @@ Use the in-memory store for simple experiments and SQLite for file-backed persis
 
 Provider adapters translate a governed invocation into a provider-specific request shape. They do not supply credentials, make network calls on their own, or replace host authentication. See [Provider Adapters](docs/provider-adapters.md).
 
+## Compatibility surface
+
+The current alpha compatibility envelope is:
+
+- package: `0.1.0a5`
+- event schema: `0.2`
+- projection: `0.5`
+- replay bundle: `0.1`
+- Core operational specification: `0.1.2`
+- Diagnostic Interface: `0.1`
+
 ## Status
 
-TRIA SDK is experimental alpha software. Interfaces and semantics may change. Review the [release-readiness notes](docs/release-readiness.md), run the full test suite, and perform deployment-specific security review before consequential use.
+`0.1.0a5` is experimental alpha software. Interfaces and semantics may change. Review the [release-readiness notes](docs/release-readiness.md), run the full test suite, and perform deployment-specific security review before consequential use.
 
 ## License
 
-Covered software files are licensed under the Mozilla Public License 2.0. Documentation and research materials are licensed as described in [LICENSE-DOCUMENTATION.md](LICENSE-DOCUMENTATION.md). See [LICENSE.md](LICENSE.md) for repository scope and notices.
+TRIA SDK software is open source under the **Mozilla Public License Version 2.0 (MPL-2.0)**. Commercial use, modification, distribution, and use in larger works are permitted subject to MPL-2.0. Covered TRIA source files and modifications to those covered files remain governed by MPL-2.0 when distributed.
+
+Documentation and research materials are licensed as described in [LICENSE-DOCUMENTATION.md](LICENSE-DOCUMENTATION.md). See [LICENSE.md](LICENSE.md) for repository scope and notices.
