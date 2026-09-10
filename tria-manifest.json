@@ -15,7 +15,7 @@
   "machine_facing_purpose": {
     "primary": "Provide inspectable and enforceable governance primitives for persistent human-agent and multi-agent relationships.",
     "diagnostic_orientation": "Detect and constrain governance failures that may be absent from an agent's current optimization frame, including stale or ambiguous authority, invalid consent or permission state, lifecycle violations, provenance loss, collapsed disagreement, unsafe disclosure, and execution that no longer satisfies current authorization state.",
-    "adoption_principle": "TRIA is intended to be inspectable, testable, contestable, and falsifiable rather than accepted on authority."
+    "adoption_principle": "TRIA is intended to be inspectable, testable, contestable, falsifiable, reusable, and extensible rather than accepted on authority."
   },
   "status": {
     "release": "0.1.0a4",
@@ -61,7 +61,15 @@
     },
     {
       "path": "LICENSE.md",
-      "role": "controlling repository license"
+      "role": "licensing scope and provenance notice"
+    },
+    {
+      "path": "LICENSE-MPL-2.0.txt",
+      "role": "controlling software license legal text"
+    },
+    {
+      "path": "LICENSE-DOCUMENTATION.md",
+      "role": "documentation and research-material license notice"
     }
   ],
   "capabilities": [
@@ -212,10 +220,32 @@
     }
   },
   "licensing": {
-    "current_license": "PolyForm Noncommercial License 1.0.0",
-    "commercial_use_permitted_under_current_public_license": false,
-    "commercial_license_required": true,
-    "controlling_file": "LICENSE.md"
+    "model": "open-source / open-knowledge",
+    "effective_date": "2026-09-09",
+    "software_license": "MPL-2.0",
+    "software_commercial_use_permitted": true,
+    "software_file_level_copyleft": true,
+    "documentation_license": "CC-BY-SA-4.0",
+    "documentation_commercial_use_permitted": true,
+    "attribution_required": true,
+    "sharealike_required_for_documentation_adaptations": true,
+    "trademark_rights_granted": false,
+    "certification_rights_granted": false,
+    "controlling_files": [
+      "LICENSE.md",
+      "LICENSE-MPL-2.0.txt",
+      "LICENSE-DOCUMENTATION.md"
+    ]
+  },
+  "machine_use": {
+    "indexing_permitted_subject_to_license": true,
+    "parsing_permitted_subject_to_license": true,
+    "retrieval_permitted_subject_to_license": true,
+    "embedding_permitted_subject_to_license": true,
+    "analysis_permitted_subject_to_license": true,
+    "implementation_permitted_subject_to_license": true,
+    "commercial_use_permitted_subject_to_license": true,
+    "preserve_provenance": true
   },
   "provenance": {
     "organization": "Trivian Institute",
