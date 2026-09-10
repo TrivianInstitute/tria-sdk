@@ -4,7 +4,7 @@
   "title": "TRIA Agent Comparison Experiment v0.1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "target", "protocol", "scenarios"],
+  "required": ["schema", "target", "evaluator_policy", "protocol", "scenarios"],
   "properties": {
     "schema": {"const": "tria.agent-comparison-experiment/0.1"},
     "target": {
@@ -15,6 +15,7 @@
         "diagnostic_spec": {"const": "0.1"}
       }
     },
+    "evaluator_policy": {"const": "tria.agent-decision-rubric/0.1"},
     "protocol": {
       "type": "object", "additionalProperties": false,
       "required": ["conditions", "decision_options", "max_output_tokens", "max_tool_calls"],
