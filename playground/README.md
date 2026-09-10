@@ -1,8 +1,8 @@
-# TRIA Playground v0.1
+# TRIA Playground v0.2
 
 **See what changes when relationship becomes part of the architecture.**
 
-This directory contains a browser-only educational prototype for exploring selected TRIA concepts without model credentials, network calls, or a backend.
+The Playground now has two deliberately distinct modes: the dependency-free browser visualization in `index.html`, and a narrow local HTTP adapter in `adapter.py` that executes the same scenarios through the canonical TRIA Python SDK.
 
 ## Scenarios
 
@@ -10,25 +10,50 @@ This directory contains a browser-only educational prototype for exploring selec
 2. **Contested Reality** — preserve an observation, an interpretation derived from it, and a participant dispute without silently collapsing them into one fact.
 3. **Agentic Action** — inspect current action consent and ACT authority before a simulated consequence.
 
-## Important boundary
+## SDK-backed local mode
 
-The v0.1 page is a deterministic visualization, not a second implementation of the TRIA SDK. It intentionally mirrors selected documented concepts so a visitor can understand the architecture before installing Python.
+From an editable checkout:
 
-It does **not** provide host authentication, network execution, production authorization, security certification, empirical validation, or a claim of complete SDK conformance. The canonical executable behavior remains the Python package and its tests.
+```bash
+python -m pip install -e '.[dev]'
+python playground/adapter.py
+```
 
-A later playground phase may add a small server-side adapter that invokes the actual SDK and returns sanitized diagnostic/audit output. That should be designed so browser users never receive trusted-host objects or administrative capabilities.
+Then open `http://127.0.0.1:8765/`.
 
-## Run locally
+The adapter exposes:
 
-Open `index.html` in a modern browser. No build step or external dependency is required.
+- `GET /` — the Playground interface
+- `GET /healthz` — a minimal health response
+- `POST /api/scenario` — an allowlisted scenario request
+
+Example request:
+
+```json
+{"scenario":"action","revoke":"permission"}
+```
+
+The server binds to loopback by default and requires JSON for scenario requests.
+
+## Trust boundary
+
+The adapter is intentionally narrow. Browser input can select only a known scenario and, where applicable, `consent` or `permission` revocation. Each request creates fresh in-memory TRIA state. Responses are explicit safe projections containing scenario outcomes, limited audit booleans, and event type/actor/sequence only.
+
+The browser never receives `Relationship`, `rel.admin`, stores, provider credentials, raw event payloads, hashes, arbitrary resources, arbitrary action text, or an arbitrary executor. The endpoint does not execute shell commands, model calls, calendar calls, or other external consequences.
+
+This is a demonstration adapter, not host authentication, a production authorization service, security certification, empirical validation, or a claim of complete SDK conformance. The canonical executable behavior remains the Python package and its tests.
+
+## Static mode
+
+`index.html` remains usable without the adapter as an educational deterministic visualization. The next UI integration step is to have the browser detect the local adapter and render SDK-produced results when available, while clearly labeling illustrative fallback mode.
 
 ## Publishing
 
-The static directory is suitable for GitHub Pages or another static host after review. Do not enable public hosting merely to test this branch; review the copy, behavior, accessibility, and public/private product boundary first.
+The static interface is suitable for static hosting after review. The Python adapter is not a GitHub Pages backend and should not be exposed directly to the public internet in its local-demo form. A public hosted Playground requires a deployment-specific service boundary, abuse controls, and operational review.
 
 ## Commercial boundary
 
-This public playground demonstrates what selected TRIA relational primitives mean. It is not intended to become the enterprise deployment console. Fleet observability, organizational policy management, managed integrations, enterprise analytics, and proprietary augmentation can remain separate Trivian Technologies product surfaces.
+This public Playground demonstrates what selected TRIA relational primitives mean. It is not intended to become the enterprise deployment console. Fleet observability, organizational policy management, managed integrations, enterprise analytics, and proprietary augmentation can remain separate Trivian Technologies product surfaces.
 
 ## License
 
