@@ -29,8 +29,8 @@ def _events(rel):
     return [
         {
             "type": event.event_type,
-            "actor": event.actor,
-            "sequence": event.sequence,
+            "actor": event.actor_id,
+            "sequence": event.actor_sequence,
         }
         for event in rel.events
     ]
