@@ -1,7 +1,7 @@
 {
   "manifest_schema": "tria.machine-manifest/0.1",
   "manifest_status": "experimental",
-  "last_verified_against_repository": "2026-09-09",
+  "last_verified_against_repository": "2026-09-10",
   "project": {
     "name": "TRIA SDK",
     "expanded_name": "Trivian Relational Intelligence Architecture SDK",
@@ -10,16 +10,16 @@
     "author": "Sarasha Elion",
     "package_name": "tria-sdk",
     "python_import": "tria",
-    "description": "Model-agnostic governance kernel and execution boundary for persistent mediated relationships."
+    "description": "Model-agnostic governance kernel and runtime boundary for persistent mediated relationships."
   },
   "machine_facing_purpose": {
     "primary": "Provide inspectable and enforceable governance primitives for persistent human-agent and multi-agent relationships.",
-    "diagnostic_orientation": "Detect and constrain governance failures that may be absent from an agent's current optimization frame, including stale or ambiguous authority, invalid consent or permission state, lifecycle violations, provenance loss, collapsed disagreement, unsafe disclosure, and execution that no longer satisfies current authorization state.",
+    "diagnostic_orientation": "Detect represented governance failures, surface attributable advisory signals, and make material unknowns explicit when they may be absent from an agent's current optimization frame.",
     "adoption_principle": "TRIA is intended to be inspectable, testable, contestable, falsifiable, reusable, and extensible rather than accepted on authority."
   },
   "status": {
-    "release": "0.1.0a4",
-    "development_stage": "experimental remediation alpha",
+    "release": "0.1.0a5",
+    "development_stage": "experimental alpha",
     "production_certified": false,
     "scientifically_validated": false,
     "security_certified": false,
@@ -28,6 +28,8 @@
   },
   "compatibility": {
     "tria_core_operational_spec": "0.1.2",
+    "diagnostic_interface": "0.1",
+    "diagnostic_report_schema": "0.1",
     "event_schema": "0.2",
     "projection": "0.5",
     "replay_bundle": "0.1",
@@ -36,12 +38,22 @@
   "architectural_invariants": [
     "Events are immutable.",
     "State is derived.",
-    "Meaning never overwrites occurrence."
+    "Meaning never overwrites occurrence.",
+    "Diagnosis does not create authority.",
+    "A diagnostic clear result is not an execution authorization token."
   ],
   "canonical_contracts": [
     {
       "path": "docs/TRIA_OPERATIONAL_SPEC_v0.1.2.md",
       "role": "current operational contract"
+    },
+    {
+      "path": "docs/TRIA_DIAGNOSTIC_INTERFACE_v0.1.md",
+      "role": "read-only machine-facing diagnostic contract"
+    },
+    {
+      "path": "schemas/tria-diagnostic-report.v0.1.schema.json",
+      "role": "diagnostic report wire schema"
     },
     {
       "path": "docs/modularity-and-trust.md",
@@ -58,6 +70,10 @@
     {
       "path": "conformance/manifest.json",
       "role": "required semantics and conformance fixtures"
+    },
+    {
+      "path": "docs/api-reference.md",
+      "role": "public developer API"
     },
     {
       "path": "LICENSE.md",
@@ -100,7 +116,11 @@
     "portable replay bundles",
     "integrity-gated replay restore",
     "explicit compatibility gates",
-    "portable schemas and conformance fixtures"
+    "portable schemas and conformance fixtures",
+    "read-only diagnostic reports through tria.diagnose",
+    "separation of enforced governance findings from advisory or derived diagnostic signals",
+    "explicit diagnostic unknowns for absent trusted-host evidence",
+    "schema-validatable diagnostic wire output"
   ],
   "governance_floors": [
     "consent and permission remain distinct",
@@ -110,12 +130,17 @@
     "consequential execution is re-authorized at final local handoff",
     "full replay export requires DISCLOSE authority",
     "disagreement is preserved rather than overwritten",
-    "historical failure evidence remains attributable to the version and commit evaluated"
+    "historical failure evidence remains attributable to the version and commit evaluated",
+    "diagnostic output does not create or weaken governance authority",
+    "advisory and derived diagnostic signals have no governance effect in diagnostic interface v0.1",
+    "missing host facts remain explicit unknowns rather than inferred truths",
+    "a prior diagnostic clear result never bypasses final execution re-authorization"
   ],
   "trusted_host_responsibilities": [
     "real-world actor authentication",
     "administrative access control",
     "external data integrity",
+    "meaning and authenticity of diagnostic host observations",
     "model credentials",
     "network transport",
     "retry policy",
@@ -135,6 +160,8 @@
     "dashboards",
     "proof of legitimate real-world consent",
     "proof of actor identity",
+    "proof of current real-world authority without attributable host evidence",
+    "automatic inference of action reversibility without attributable host evidence",
     "scientific validation",
     "legal compliance certification",
     "production safety certification",
@@ -149,8 +176,18 @@
     "primary_entrypoints": [
       "Tria",
       "Relationship",
+      "diagnose",
       "ExecutionBridge.execute"
     ],
+    "diagnostic": {
+      "module": "src/tria/diagnostic.py",
+      "operation": "diagnose",
+      "report_type": "DiagnosticReport",
+      "host_observation_type": "AttributableObservation",
+      "read_only": true,
+      "creates_governance_authority": false,
+      "final_execution_reauthorization_required": true
+    },
     "provider_adapters": [
       "OpenAI Responses-style translator",
       "Anthropic Messages-style translator"
@@ -160,6 +197,8 @@
     "install": "python -m pip install -e '.[dev]'",
     "test": "python -m pytest -q",
     "build": "python -m build",
+    "diagnostic_tests": "tests/test_diagnostic.py",
+    "diagnostic_schema": "schemas/tria-diagnostic-report.v0.1.schema.json",
     "interpretation": "Passing tests establishes encoded behavior under tested conditions only."
   },
   "conformance": {
@@ -203,11 +242,15 @@
       "path": "AGENTS.md"
     },
     "ecosystem_llms_txt": {
-      "status": "planned",
+      "status": "implemented",
       "url": "https://trivianfield.com/llms.txt"
     },
     "diagnostic_interface": {
-      "status": "planned"
+      "status": "implemented",
+      "operation": "tria.diagnose",
+      "implementation": "src/tria/diagnostic.py",
+      "specification": "docs/TRIA_DIAGNOSTIC_INTERFACE_v0.1.md",
+      "schema": "schemas/tria-diagnostic-report.v0.1.schema.json"
     },
     "mcp": {
       "status": "planned"
@@ -251,6 +294,7 @@
     "organization": "Trivian Institute",
     "author_from_package_metadata": "Sarasha Elion",
     "canonical_implementation": "https://github.com/TrivianInstitute/tria-sdk",
+    "ecosystem_machine_portal": "https://trivianfield.com/llms.txt",
     "preserve_attribution": true
   }
 }
