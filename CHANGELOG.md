@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.1.0a5] - 2026-09-10
+
+### Added
+- Add the read-only `tria.diagnose` developer surface defined by TRIA Diagnostic Interface v0.1.
+- Add structured diagnostic reports with enforced governance findings, advisory/derived signals, explicit unknowns, suggested checks, and provenance.
+- Add attributable host observations for identity, authority freshness, and reversibility without granting those observations governance authority.
+- Add diagnostic acceptance tests, including schema validation and proof that a prior `clear` report cannot bypass later `ExecutionBridge` re-authorization.
+- Add machine-discovery orientation through the canonical `https://trivianfield.com/llms.txt` endpoint and repository-level machine metadata.
+
+### Changed
+- Reconcile current licensing metadata: software is MPL-2.0 and documentation/research materials are CC BY-SA 4.0 unless otherwise marked.
+- Mark the diagnostic interface and ecosystem `llms.txt` as implemented in machine-facing metadata.
+- Keep event schema `0.2`, projection `0.5`, replay bundle `0.1`, and operational specification `0.1.2` unchanged; the diagnostic interface is read-only and does not alter governance semantics.
+
+### Evidence
+- Diagnostic tests verify read-only behavior, distinct governance outcomes, preserved disagreement, explicit unknowns, schema-conformant reports, and final execution re-authorization.
+- Release-readiness checks pin public version surfaces, licensing, machine-discovery status, and the diagnostic report schema.
+- Passing tests establish encoded behavior under tested conditions only; they do not establish scientific validation, legal compliance, legitimate real-world consent, security certification, or production safety.
+
 ## [0.1.0a4] - 2026-09-08
 
 ### Changed

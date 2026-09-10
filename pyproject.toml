@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "tria-sdk"
-version = "0.1.0a4"
+version = "0.1.0a5"
 description = "Model-agnostic governance kernel and runtime boundary for persistent mediated relationships."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -21,7 +21,7 @@ classifiers = [
 dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0", "build>=1.2"]
+dev = ["pytest>=8.0", "build>=1.2", "jsonschema>=4.23"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/tria"]

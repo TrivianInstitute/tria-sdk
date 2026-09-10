@@ -12,11 +12,11 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_package_version_is_consistent_across_public_surfaces():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         project = tomllib.load(handle)["project"]
-    assert project["version"] == tria.__version__ == "0.1.0a4"
+    assert project["version"] == tria.__version__ == "0.1.0a5"
     readme = (ROOT / "README.md").read_text()
     changelog = (ROOT / "CHANGELOG.md").read_text()
-    assert "`0.1.0a4`" in readme
-    assert "## [0.1.0a4]" in changelog
+    assert "`0.1.0a5`" in readme
+    assert "## [0.1.0a5]" in changelog
 
 
 def test_conformance_manifest_matches_runtime_compatibility_constants():
@@ -31,7 +31,8 @@ def test_documented_compatibility_envelope_matches_runtime():
     assert f"event schema: `{tria.CURRENT_EVENT_SCHEMA_VERSION}`" in readme
     assert f"projection: `{tria.CURRENT_PROJECTION_VERSION}`" in readme
     assert f"replay bundle: `{tria.BUNDLE_FORMAT_VERSION}`" in readme
-    assert "Core specification: `0.1.2`" in readme
+    assert "Core operational specification: `0.1.2`" in readme
+    assert "Diagnostic Interface: `0.1`" in readme
 
 
 def test_every_manifest_fixture_exists_and_is_valid_json():
@@ -50,6 +51,7 @@ def test_release_schemas_exist_and_are_valid_json():
         "relational_event.schema.json",
         "relational_state.schema.json",
         "replay-bundle.schema.json",
+        "tria-diagnostic-report.v0.1.schema.json",
     }
     schema_dir = ROOT / "schemas"
     assert required.issubset({path.name for path in schema_dir.glob("*.json")})
@@ -85,3 +87,11 @@ def test_release_candidate_keeps_license_decision_explicit():
     assert "SPDX-License-Identifier: MPL-2.0" in license_text
     assert "Mozilla Public License Version 2.0" in mpl_text
     assert "Creative Commons Attribution-ShareAlike 4.0 International" in docs_text
+
+
+def test_machine_manifest_tracks_current_diagnostic_surface():
+    manifest = json.loads((ROOT / "tria-manifest.json").read_text())
+    assert manifest["status"]["release"] == tria.__version__
+    assert manifest["machine_discovery"]["ecosystem_llms_txt"]["status"] == "implemented"
+    assert manifest["machine_discovery"]["diagnostic_interface"]["status"] == "implemented"
+    assert manifest["machine_discovery"]["diagnostic_interface"]["operation"] == "tria.diagnose"
