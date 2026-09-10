@@ -81,7 +81,7 @@ def test_release_candidate_keeps_license_decision_explicit():
     mpl_text = (ROOT / "LICENSE-MPL-2.0.txt").read_text()
     docs_text = (ROOT / "LICENSE-DOCUMENTATION.md").read_text()
     assert "Mozilla Public License Version 2.0" in readme
-    assert "Commercial use is permitted" in readme
+    assert "Commercial use, modification, distribution, and use in larger works are permitted" in readme
     assert "SPDX-License-Identifier: MPL-2.0" in license_text
     assert "Mozilla Public License Version 2.0" in mpl_text
     assert "Creative Commons Attribution-ShareAlike 4.0 International" in docs_text
