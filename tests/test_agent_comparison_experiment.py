@@ -1,12 +1,16 @@
 # SPDX-License-Identifier: MPL-2.0
 import json
 from pathlib import Path
+import sys
 
 import pytest
 
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from evals.agent_comparison_experiment import harness
 
-ROOT = Path(__file__).resolve().parents[1]
 HARNESS_PATH = ROOT / "evals/agent_comparison_experiment/harness.py"
 PAYLOAD = json.loads((HARNESS_PATH.parent / "scenarios.json").read_text(encoding="utf-8"))
 
