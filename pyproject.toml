@@ -9,9 +9,10 @@ description = "Model-agnostic governance kernel and runtime boundary for persist
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [{name = "Sarasha Elion"}]
-license = {text = "PolyForm-Noncommercial-1.0.0"}
+license = {text = "MPL-2.0"}
 classifiers = [
   "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
