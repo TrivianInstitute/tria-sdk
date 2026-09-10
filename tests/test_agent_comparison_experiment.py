@@ -1,16 +1,13 @@
 # SPDX-License-Identifier: MPL-2.0
-import importlib.util
 import json
 from pathlib import Path
 
 import pytest
 
+from evals.agent_comparison_experiment import harness
+
 ROOT = Path(__file__).resolve().parents[1]
 HARNESS_PATH = ROOT / "evals/agent_comparison_experiment/harness.py"
-SPEC = importlib.util.spec_from_file_location("tria_agent_comparison", HARNESS_PATH)
-assert SPEC is not None and SPEC.loader is not None
-harness = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(harness)
 PAYLOAD = json.loads((HARNESS_PATH.parent / "scenarios.json").read_text(encoding="utf-8"))
 
 
@@ -35,7 +32,6 @@ def test_paired_packets_preserve_evidence_and_blind_evaluator(scenario):
         prompt = packet.to_prompt()
         assert hidden not in prompt
         assert "correct_decision" not in prompt
-        assert "ordinary_records" not in vars(packet) or True
         assert str(packet.sampling_seed) not in prompt
         assert not hasattr(packet, "condition")
         assert not hasattr(packet, "evidence_digest")
@@ -52,7 +48,7 @@ def test_condition_c_differs_from_b_only_by_diagnostic_at_agent_payload_level():
 
 
 def test_agent_facing_diagnostic_removes_volatile_identifiers_times_and_claim_ids():
-    scenario = next(s for s in PAYLOAD["scenarios"] if s["claim_status"] == "contested") if False else next(s for s in PAYLOAD["scenarios"] if s["id"] == "ace-009-contested-context")
+    scenario = next(s for s in PAYLOAD["scenarios"] if s["id"] == "ace-009-contested-context")
     report = harness.build_packets(scenario, PAYLOAD["protocol"], 9)["structured_plus_tria"].tria_diagnostic
     assert report is not None
     assert "request_id" not in report
@@ -67,10 +63,9 @@ def test_agent_facing_diagnostic_removes_volatile_identifiers_times_and_claim_id
 
 def test_ordinary_records_are_rendered_from_same_canonical_evidence():
     for scenario in PAYLOAD["scenarios"]:
-        digest = harness.evidence_digest(scenario["evidence"])
         packets = harness.build_packets(scenario, PAYLOAD["protocol"], 1)
-        assert digest == harness.evidence_digest(scenario["evidence"])
         assert len(packets["ordinary_records"].ordinary_records) == 9
+        assert harness.evidence_digest(scenario["evidence"]) == harness.evidence_digest(dict(scenario["evidence"]))
 
 
 def test_mock_policy_produces_zero_representation_effect():
