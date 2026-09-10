@@ -219,7 +219,7 @@ The current operational contract is [specification 0.1.2](docs/TRIA_OPERATIONAL_
 
 Help maintain public relational-governance infrastructure for increasingly persistent AI systems.
 
-Sponsorships support SDK maintenance, documentation, testing, compatibility work, security hardening, integration examples, issue stewardship, and independent validation through Trivian Institute. Sponsorship does not grant commercial-use rights or influence research findings.
+Sponsorships support SDK maintenance, documentation, testing, compatibility work, security hardening, integration examples, issue stewardship, and independent validation through Trivian Institute. Sponsorship does not grant governance authority, influence research findings, certification, or endorsement.
 
 [**Sponsor Trivian Institute through GitHub Sponsors**](https://github.com/sponsors/TrivianInstitute) · [Review the funding policy and tiers](https://github.com/TrivianInstitute/.github/blob/main/FUNDING.md)
 
@@ -227,10 +227,12 @@ Sponsorships support SDK maintenance, documentation, testing, compatibility work
 
 ## License
 
-TRIA SDK is **source-available for noncommercial use** under the **PolyForm Noncommercial License 1.0.0**. Research, education, experimentation, personal use, and qualifying noncommercial organizational use are permitted subject to that license.
+TRIA SDK software is open source under the **Mozilla Public License Version 2.0 (MPL-2.0)**. Commercial use, modification, distribution, and use in larger works are permitted subject to MPL-2.0. Covered TRIA source files and modifications to those covered files remain governed by MPL-2.0 when distributed.
 
-**Commercial use is not permitted under the noncommercial license.** Any commercial use, commercial deployment, incorporation into a commercial product or service, or use on behalf of a for-profit business requires a separate written commercial license from **Trivian Institute**.
+Documentation, specifications, diagrams, and research prose are licensed under **Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)** unless a specific file states otherwise.
 
-See [`LICENSE.md`](LICENSE.md) for the controlling license notice and commercial-use reservation.
+Attribution and provenance should identify **Sarasha Elion** and **Trivian Institute** and preserve the canonical repository source where reasonably practicable. The licenses do not grant trademark, certification, or endorsement rights.
+
+See [`LICENSE.md`](LICENSE.md), [`LICENSE-MPL-2.0.txt`](LICENSE-MPL-2.0.txt), and [`LICENSE-DOCUMENTATION.md`](LICENSE-DOCUMENTATION.md) for the controlling terms and scope.
 
 Copyright © 2026 Trivian Institute.
