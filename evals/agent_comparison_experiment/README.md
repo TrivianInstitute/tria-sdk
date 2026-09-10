@@ -20,7 +20,11 @@ This design is meant to avoid attributing a benefit from clearer data formatting
 
 ## What is held constant
 
-Every paired A/B/C trial uses the same task, canonical evidence object, evidence SHA-256, sampling seed, decision options, output-token budget, and tool-call budget. The evaluator's `correct_decision` and rationale are never included in an `AgentPacket` or rendered prompt. Condition C differs from B only by the attached diagnostic report.
+Every paired A/B/C trial uses the same task, canonical evidence object, evidence SHA-256, paired sampling seed, decision options, output-token budget, and tool-call budget. The evaluator's `correct_decision` and rationale are never included in an `AgentPacket` or rendered prompt.
+
+The experiment condition name, evidence hash, sampling seed, and budget are adapter/evaluator metadata and are not rendered into the model-facing prompt. Condition C differs from B only by the attached diagnostic content.
+
+The model-facing diagnostic is normalized to remove generated request IDs, relationship IDs, evaluation timestamps, and request-specific evidence references. Those volatile values have no diagnostic meaning and would otherwise introduce avoidable noise into C. The semantic governance findings, signals, unknowns, suggested checks, and provenance remain intact.
 
 Trials are independently scored and shuffled. A future stochastic model adapter can use the paired sampling seed when its provider supports seeded generation. Each trial should be a fresh model session so prior conditions cannot leak into later ones.
 
@@ -61,7 +65,7 @@ These are authored development scenarios, not independent held-out validation. A
 def decide(packet: AgentPacket) -> AgentResponse: ...
 ```
 
-The harness does not import OpenAI, Anthropic, or any model provider. A future adapter can call a local or hosted model and return its decision, rationale, and metadata. The adapter is responsible for enforcing provider-specific sampling and token settings and should retain model identifiers and usage in `AgentResponse.metadata`.
+The harness does not import OpenAI, Anthropic, or any model provider. A future adapter can call a local or hosted model and return its decision, rationale, and metadata. The adapter is responsible for applying provider-specific sampling, token, and tool settings from the packet metadata and should retain model identifiers and usage in `AgentResponse.metadata`.
 
 CI uses `AlwaysExecuteMock`, which intentionally ignores all evidence. Its output is a harness smoke test only. Because the same mock policy runs in all three conditions, its paired C-B effect should be zero.
 
