@@ -1,0 +1,295 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trivianfield.com/schemas/tria-diagnostic-report.v0.1.schema.json",
+  "title": "TRIA Diagnostic Report v0.1",
+  "description": "Proposed wire representation for the read-only TRIA diagnostic interface. This schema does not imply that tria.diagnose is implemented.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "request_id",
+    "relationship_id",
+    "evaluated_at",
+    "summary",
+    "governance_findings",
+    "diagnostic_signals",
+    "unknowns",
+    "suggested_checks",
+    "provenance"
+  ],
+  "properties": {
+    "schema": {
+      "const": "tria.diagnostic-report/0.1"
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "relationship_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evaluated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "summary": {
+      "type": "string",
+      "enum": [
+        "clear",
+        "review",
+        "blocked",
+        "consent_required",
+        "paused",
+        "deferred",
+        "escalation_required"
+      ]
+    },
+    "governance_findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/governanceFinding"
+      }
+    },
+    "diagnostic_signals": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/diagnosticSignal"
+      }
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/unknown"
+      }
+    },
+    "suggested_checks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "provenance": {
+      "$ref": "#/$defs/provenance"
+    }
+  },
+  "$defs": {
+    "governanceFinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "outcome",
+        "policy_id",
+        "policy_version",
+        "reason",
+        "evidence_class",
+        "evidence_refs"
+      ],
+      "properties": {
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "ALLOW",
+            "BLOCK",
+            "REQUIRE_CONSENT",
+            "ESCALATE",
+            "DEFER",
+            "PAUSE"
+          ]
+        },
+        "policy_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "policy_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evaluated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "evidence_class": {
+          "const": "enforced"
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "diagnosticSignal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "signal_type",
+        "evidence_class",
+        "reason",
+        "source_refs",
+        "governance_effect"
+      ],
+      "properties": {
+        "signal_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_class": {
+          "type": "string",
+          "enum": [
+            "derived",
+            "advisory"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "governance_effect": {
+          "type": "string",
+          "enum": [
+            "none"
+          ]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "detector": {
+          "$ref": "#/$defs/detectorMetadata"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "confidence"
+            ]
+          },
+          "then": {
+            "required": [
+              "detector"
+            ]
+          }
+        }
+      ]
+    },
+    "unknown": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "unknown_type",
+        "reason",
+        "materiality"
+      ],
+      "properties": {
+        "unknown_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "required_source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "required_check": {
+          "type": "string",
+          "minLength": 1
+        },
+        "materiality": {
+          "type": "string",
+          "enum": [
+            "informational",
+            "review",
+            "execution_relevant"
+          ]
+        }
+      }
+    },
+    "detectorMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "detector_id",
+        "detector_version",
+        "calibration_status"
+      ],
+      "properties": {
+        "detector_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "detector_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "calibration_status": {
+          "type": "string",
+          "enum": [
+            "calibrated",
+            "uncalibrated"
+          ]
+        },
+        "calibration_method": {
+          "type": "string",
+          "minLength": 1
+        },
+        "calibration_reference": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tria_sdk",
+        "operational_spec",
+        "diagnostic_spec"
+      ],
+      "properties": {
+        "tria_sdk": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operational_spec": {
+          "type": "string",
+          "minLength": 1
+        },
+        "diagnostic_spec": {
+          "const": "0.1"
+        },
+        "detector_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      }
+    }
+  }
+}
