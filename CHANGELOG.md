@@ -16,6 +16,7 @@
 
 ### Evidence
 - Diagnostic tests verify read-only behavior, distinct governance outcomes, preserved disagreement, explicit unknowns, schema-conformant reports, and final execution re-authorization.
+- Release-readiness checks pin public version surfaces, licensing, machine-discovery status, and the diagnostic report schema.
 - Passing tests establish encoded behavior under tested conditions only; they do not establish scientific validation, legal compliance, legitimate real-world consent, security certification, or production safety.
 
 ## [0.1.0a4] - 2026-09-08
