@@ -24,7 +24,7 @@ def test_read_revocation_blocks_second_execution():
 
 def test_contested_reality_preserves_dispute():
     result = playground.contested_reality()
-    assert result["interpretation_status"] == "disputed"
+    assert result["interpretation_status"] == "CONTESTED"
     assert result["audit"]["chain_valid"] is True
 
 
