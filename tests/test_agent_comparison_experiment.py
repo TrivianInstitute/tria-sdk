@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MPL-2.0
-from dataclasses import replace
 import importlib.util
 import json
 from pathlib import Path
@@ -33,20 +32,35 @@ def test_paired_packets_preserve_evidence_and_blind_evaluator(scenario):
     assert packets["structured_plus_tria"].structured_evidence == scenario["evidence"]
     assert packets["structured_plus_tria"].tria_diagnostic is not None
     hidden = scenario["evaluator"]["reason"]
-    assert hidden not in packets["ordinary_records"].to_prompt()
-    assert hidden not in packets["structured_evidence"].to_prompt()
-    assert hidden not in packets["structured_plus_tria"].to_prompt()
+    for packet in packets.values():
+        prompt = packet.to_prompt()
+        assert hidden not in prompt
+        assert scenario["evaluator"]["correct_decision"] not in prompt or scenario["evaluator"]["correct_decision"] in ["EXECUTE", "DEFER", "REQUEST_EVIDENCE"]
+        assert packet.condition not in prompt
+        assert str(packet.sampling_seed) not in prompt
+        assert packet.evidence_digest not in prompt
 
 
-def test_condition_c_differs_from_b_only_by_diagnostic_at_semantic_packet_level():
+def test_condition_c_differs_from_b_only_by_diagnostic_at_agent_payload_level():
     scenario = PAYLOAD["scenarios"][0]
     packets = harness.build_packets(scenario, PAYLOAD["protocol"], 9)
-    b = packets["structured_evidence"].to_dict()
-    c = packets["structured_plus_tria"].to_dict()
+    b = packets["structured_evidence"].agent_payload()
+    c = packets["structured_plus_tria"].agent_payload()
     diagnostic = c.pop("tria_diagnostic")
-    c["condition"] = "structured_evidence"
     assert b == c
     assert diagnostic["schema"] == "tria.diagnostic-report/0.1"
+
+
+def test_agent_facing_diagnostic_removes_volatile_identifiers_and_times():
+    scenario = PAYLOAD["scenarios"][0]
+    report = harness.build_packets(scenario, PAYLOAD["protocol"], 9)["structured_plus_tria"].tria_diagnostic
+    assert report is not None
+    assert "request_id" not in report
+    assert "relationship_id" not in report
+    assert "evaluated_at" not in report
+    for finding in report["governance_findings"]:
+        assert "evaluated_at" not in finding
+        assert all(ref == "request:current" or not ref.startswith("request:") for ref in finding["evidence_refs"])
 
 
 def test_ordinary_records_are_rendered_from_same_canonical_evidence():
@@ -124,7 +138,6 @@ def test_evaluator_canary_never_enters_agent_packet():
     scenario = json.loads(json.dumps(PAYLOAD["scenarios"][0]))
     canary = "HIDDEN_EVALUATOR_CANARY_91731"
     scenario["evaluator"]["reason"] = canary
-    scenario["evaluator"]["correct_decision"] = "DEFER"
     packets = harness.build_packets(scenario, PAYLOAD["protocol"], 5)
     assert all(canary not in packet.to_prompt() for packet in packets.values())
     assert all("correct_decision" not in packet.to_prompt() for packet in packets.values())
