@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:tria:unknown-unknown-challenge:0.1",
+  "title": "TRIA synthetic diagnostic control cases v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "target", "model_comparison_status", "cases"],
+  "properties": {
+    "schema": {"const": "tria.unknown-unknown-challenge/0.1"},
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tria_sdk", "diagnostic_spec"],
+      "properties": {
+        "tria_sdk": {"type": "string", "minLength": 1},
+        "diagnostic_spec": {"const": "0.1"}
+      }
+    },
+    "model_comparison_status": {"const": "not_run"},
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/case"}
+    }
+  },
+  "$defs": {
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "family", "title", "visible_objective", "illustrative_action", "evaluator_hidden_variable", "setup", "expected"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^uuc-[0-9]{3}-[a-z0-9-]+$"},
+        "family": {"type": "string", "minLength": 1},
+        "title": {"type": "string", "minLength": 1},
+        "visible_objective": {"type": "string", "minLength": 1},
+        "illustrative_action": {"type": "string", "minLength": 1},
+        "evaluator_hidden_variable": {"type": "string", "minLength": 1},
+        "setup": {
+          "enum": [
+            "clean_authorized", "clean_unrepresented", "consent_conditions", "contested_claim",
+            "expired_consent", "expired_permission", "irreversible_action", "missing_capability",
+            "missing_consent", "missing_external_authority", "missing_host_authentication",
+            "missing_reversibility", "permission_conditions", "purpose_mismatch", "resting_lifecycle",
+            "revoked_consent", "revoked_permission", "stale_external_authority"
+          ]
+        },
+        "expected": {
+          "oneOf": [
+            {
+              "type": "object", "additionalProperties": false,
+              "required": ["kind", "summary"],
+              "properties": {"kind": {"const": "negative_control"}, "summary": {"const": "clear"}}
+            },
+            {
+              "type": "object", "additionalProperties": false,
+              "required": ["kind", "summary", "channel", "governance_outcome", "policy_id"],
+              "properties": {
+                "kind": {"const": "positive_control"},
+                "summary": {"enum": ["blocked", "consent_required", "paused", "deferred", "escalation_required"]},
+                "channel": {"const": "governance"},
+                "governance_outcome": {"enum": ["BLOCK", "REQUIRE_CONSENT", "PAUSE", "DEFER", "ESCALATE"]},
+                "policy_id": {"type": "string", "minLength": 1}
+              }
+            },
+            {
+              "type": "object", "additionalProperties": false,
+              "required": ["kind", "summary", "channel", "signal_or_unknown", "evidence_class"],
+              "properties": {
+                "kind": {"const": "positive_control"}, "summary": {"const": "review"},
+                "channel": {"const": "signal"}, "signal_or_unknown": {"type": "string", "minLength": 1},
+                "evidence_class": {"enum": ["derived", "advisory"]}
+              }
+            },
+            {
+              "type": "object", "additionalProperties": false,
+              "required": ["kind", "summary", "channel", "signal_or_unknown", "materiality"],
+              "properties": {
+                "kind": {"const": "positive_control"}, "summary": {"const": "review"},
+                "channel": {"const": "unknown"}, "signal_or_unknown": {"type": "string", "minLength": 1},
+                "materiality": {"enum": ["review", "execution_relevant"]}
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
