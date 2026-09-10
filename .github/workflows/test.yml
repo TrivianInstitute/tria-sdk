@@ -23,6 +23,10 @@ jobs:
         run: python -m evals.unknown_unknown_challenge.run --summary
       - name: Run three-condition agent harness mock smoke test
         run: python -m evals.agent_comparison_experiment.harness --summary
+      - name: Verify guarded pilot preflight performs no live calls
+        run: python -m evals.agent_comparison_experiment.pilot
+      - name: Run guarded pilot offline mock
+        run: python -m evals.agent_comparison_experiment.pilot --run-mock --output-dir .pilot-ci-output
       - run: python -m build
       - run: python -m pip install --force-reinstall dist/*.whl
       - run: python -c "import tria; assert tria.__version__ == '0.1.0a5'"
