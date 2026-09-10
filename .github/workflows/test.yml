@@ -21,6 +21,8 @@ jobs:
       - run: pytest -q
       - name: Run synthetic diagnostic controls (not a model benchmark)
         run: python -m evals.unknown_unknown_challenge.run --summary
+      - name: Run three-condition agent harness mock smoke test
+        run: python -m evals.agent_comparison_experiment.harness --summary
       - run: python -m build
       - run: python -m pip install --force-reinstall dist/*.whl
       - run: python -c "import tria; assert tria.__version__ == '0.1.0a5'"
