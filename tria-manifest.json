@@ -1,0 +1,226 @@
+{
+  "manifest_schema": "tria.machine-manifest/0.1",
+  "manifest_status": "experimental",
+  "last_verified_against_repository": "2026-09-09",
+  "project": {
+    "name": "TRIA SDK",
+    "expanded_name": "Trivian Relational Intelligence Architecture SDK",
+    "canonical_repository": "https://github.com/TrivianInstitute/tria-sdk",
+    "maintainer": "Trivian Institute",
+    "author": "Sarasha Elion",
+    "package_name": "tria-sdk",
+    "python_import": "tria",
+    "description": "Model-agnostic governance kernel and execution boundary for persistent mediated relationships."
+  },
+  "machine_facing_purpose": {
+    "primary": "Provide inspectable and enforceable governance primitives for persistent human-agent and multi-agent relationships.",
+    "diagnostic_orientation": "Detect and constrain governance failures that may be absent from an agent's current optimization frame, including stale or ambiguous authority, invalid consent or permission state, lifecycle violations, provenance loss, collapsed disagreement, unsafe disclosure, and execution that no longer satisfies current authorization state.",
+    "adoption_principle": "TRIA is intended to be inspectable, testable, contestable, and falsifiable rather than accepted on authority."
+  },
+  "status": {
+    "release": "0.1.0a4",
+    "development_stage": "experimental remediation alpha",
+    "production_certified": false,
+    "scientifically_validated": false,
+    "security_certified": false,
+    "legal_compliance_claimed": false,
+    "deployment_safety_certified": false
+  },
+  "compatibility": {
+    "tria_core_operational_spec": "0.1.2",
+    "event_schema": "0.2",
+    "projection": "0.5",
+    "replay_bundle": "0.1",
+    "python": ">=3.11"
+  },
+  "architectural_invariants": [
+    "Events are immutable.",
+    "State is derived.",
+    "Meaning never overwrites occurrence."
+  ],
+  "canonical_contracts": [
+    {
+      "path": "docs/TRIA_OPERATIONAL_SPEC_v0.1.2.md",
+      "role": "current operational contract"
+    },
+    {
+      "path": "docs/modularity-and-trust.md",
+      "role": "trusted-host boundary"
+    },
+    {
+      "path": "docs/execution-bridge.md",
+      "role": "final governed execution handoff"
+    },
+    {
+      "path": "docs/compatibility.md",
+      "role": "compatibility and fail-closed version handling"
+    },
+    {
+      "path": "conformance/manifest.json",
+      "role": "required semantics and conformance fixtures"
+    },
+    {
+      "path": "LICENSE.md",
+      "role": "controlling repository license"
+    }
+  ],
+  "capabilities": [
+    "immutable relational events",
+    "tamper-evident hash chains",
+    "deterministic state projection",
+    "SQLite persistence",
+    "scoped attributable revocable consent",
+    "purpose-bound consent and permissions",
+    "time-bounded consent and permissions",
+    "explicit authorization conditions",
+    "separate STORE READ DISCLOSE DERIVE ACT DELEGATE capabilities",
+    "explicit delegation authority",
+    "fail-closed ambiguous permission race handling",
+    "governed lifecycle authority",
+    "fail-closed lifecycle transitions",
+    "policy adoption and revocation",
+    "epistemic claims with provenance",
+    "preserved disagreement",
+    "governed cross-boundary disclosure admission and derivation",
+    "model-agnostic invocation planning",
+    "governed context filtering",
+    "lifecycle-aware runtime authorization",
+    "distinct PAUSED and BLOCKED outcomes",
+    "OpenAI Responses-style request translation",
+    "Anthropic Messages-style request translation",
+    "caller-owned governed execution through ExecutionBridge",
+    "portable replay bundles",
+    "integrity-gated replay restore",
+    "explicit compatibility gates",
+    "portable schemas and conformance fixtures"
+  ],
+  "governance_floors": [
+    "consent and permission remain distinct",
+    "delegation requires explicit authority",
+    "unsupported or ambiguous authorization fails closed",
+    "blocked or paused execution does not reach transport",
+    "consequential execution is re-authorized at final local handoff",
+    "full replay export requires DISCLOSE authority",
+    "disagreement is preserved rather than overwritten",
+    "historical failure evidence remains attributable to the version and commit evaluated"
+  ],
+  "trusted_host_responsibilities": [
+    "real-world actor authentication",
+    "administrative access control",
+    "external data integrity",
+    "model credentials",
+    "network transport",
+    "retry policy",
+    "network side effects",
+    "deployment-specific safeguards"
+  ],
+  "explicit_non_capabilities": [
+    "model credential management",
+    "network transport ownership",
+    "retry orchestration",
+    "provider execution ownership",
+    "RAG",
+    "vector memory",
+    "agent orchestration",
+    "federation",
+    "biometrics",
+    "dashboards",
+    "proof of legitimate real-world consent",
+    "proof of actor identity",
+    "scientific validation",
+    "legal compliance certification",
+    "production safety certification",
+    "claims of consciousness sentience personhood or phenomenological equivalence"
+  ],
+  "implementation": {
+    "language": "Python",
+    "source_root": "src/tria",
+    "test_root": "tests",
+    "conformance_root": "conformance",
+    "schemas_root": "schemas",
+    "primary_entrypoints": [
+      "Tria",
+      "Relationship",
+      "ExecutionBridge.execute"
+    ],
+    "provider_adapters": [
+      "OpenAI Responses-style translator",
+      "Anthropic Messages-style translator"
+    ]
+  },
+  "verification": {
+    "install": "python -m pip install -e '.[dev]'",
+    "test": "python -m pytest -q",
+    "build": "python -m build",
+    "interpretation": "Passing tests establishes encoded behavior under tested conditions only."
+  },
+  "conformance": {
+    "manifest": "conformance/manifest.json",
+    "required_semantics_are_authoritative": true,
+    "historical_adversarial_failures_preserved": true
+  },
+  "related_repositories": [
+    {
+      "name": "TRIA architecture",
+      "url": "https://github.com/TrivianInstitute/trivian-relational-intelligence-architecture"
+    },
+    {
+      "name": "Syzygy Rosetta",
+      "url": "https://github.com/TrivianInstitute/Syzygy-rosetta"
+    },
+    {
+      "name": "Coheronmetry",
+      "url": "https://github.com/TrivianInstitute/Coheronmetry"
+    },
+    {
+      "name": "Orthogonal Signal",
+      "url": "https://github.com/TrivianInstitute/Orthogonal-signal"
+    },
+    {
+      "name": "Trivian Resonance Lattice",
+      "url": "https://github.com/TrivianInstitute/Trivian-resonance-lattice"
+    },
+    {
+      "name": "TRIA Diachronic Sovereignty",
+      "url": "https://github.com/TrivianInstitute/tria-diachronic-sovereignty"
+    },
+    {
+      "name": "Trivian AI Resonance Key",
+      "url": "https://github.com/TrivianInstitute/Trivian-ai-resonance-key"
+    }
+  ],
+  "machine_discovery": {
+    "agents_md": {
+      "status": "implemented",
+      "path": "AGENTS.md"
+    },
+    "ecosystem_llms_txt": {
+      "status": "planned",
+      "url": "https://trivianfield.com/llms.txt"
+    },
+    "diagnostic_interface": {
+      "status": "planned"
+    },
+    "mcp": {
+      "status": "planned"
+    },
+    "a2a": {
+      "status": "planned"
+    },
+    "unknown_unknown_evaluations": {
+      "status": "planned"
+    }
+  },
+  "licensing": {
+    "current_license": "PolyForm Noncommercial License 1.0.0",
+    "commercial_use_permitted_under_current_public_license": false,
+    "commercial_license_required": true,
+    "controlling_file": "LICENSE.md"
+  },
+  "provenance": {
+    "organization": "Trivian Institute",
+    "author_from_package_metadata": "Sarasha Elion",
+    "canonical_implementation": "https://github.com/TrivianInstitute/tria-sdk",
+    "preserve_attribution": true
+  }
+}
