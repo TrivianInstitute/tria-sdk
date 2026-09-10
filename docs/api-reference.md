@@ -25,6 +25,9 @@ application](complete-governed-application.md) before advanced composition.
 | CapabilityRequirement(resource, capability, purpose=None, satisfied_conditions=()) | Explicit resource/capability check |
 | ConsentRequirement(actor, scope, purpose=None, satisfied_conditions=()) | Explicit affected-participant consent check |
 | InvocationRequest(requested_by, action, target, context_resources=(), requirements=(), consent_requirements=(), request_id=generated, metadata={}, action_ref=None) | Immutable input; use fresh ID for each intentional attempt; complete requirements are host responsibility |
+| AttributableObservation(observation_type, value, source_refs) | Host-supplied diagnostic evidence; source_refs must be nonempty; supplying it does not grant governance authority |
+| diagnose(relationship, request, observations=()) | Pure read-only inspection; returns DiagnosticReport using Runtime.evaluate for encoded governance checks; `clear` is not an authorization token |
+| DiagnosticReport.to_dict() | JSON-friendly report matching `schemas/tria-diagnostic-report.v0.1.schema.json` |
 | Runtime(resource_resolver=None).prepare(relationship, request) | Returns InvocationPlan; authorized context only; no executor |
 | Runtime.record_result(relationship, InvocationResult(...)) | Advanced host-only recording; bridge does this automatically |
 | ExecutionBridge(runtime=None).prepare(rel, request, adapter, *, model, **options) | Inspection receipt, no consequence authority token |
@@ -35,6 +38,19 @@ application](complete-governed-application.md) before advanced composition.
 | export_replay_bundle(rel, *, actor, purpose=None, satisfied_conditions=()) | DISCLOSE-gated complete history; bundle.to_json() serializes |
 | verify_replay_bundle(bundle) | Integrity/compatibility report, not source authenticity or truth |
 | SQLiteEventStore(path), close(), context manager | Shared local process guard; atomic compare-and-append; see persistence guide |
+
+## Diagnostic interface
+
+`diagnose` asks what represented governance conditions, advisory signals, and material
+unknowns are relevant to a proposed `InvocationRequest`. It never appends events,
+invokes providers, mutates permissions/consent/lifecycle, or replaces final execution
+authorization. Missing host facts remain explicit unknowns rather than guessed values.
+See [TRIA Diagnostic Interface v0.1](TRIA_DIAGNOSTIC_INTERFACE_v0.1.md).
+
+The initial attributable observation types are `host_authentication`,
+`external_authority_current`, and `reversibility`. Diagnostic signals in v0.1 have no
+governance effect. Hosts remain responsible for authentication, external truth, and
+the meaning of supplied evidence.
 
 The advanced EventStore protocol requires append(event), append_many(events),
 list(relationship_id), and execution_guard() used by both writes and execution.
