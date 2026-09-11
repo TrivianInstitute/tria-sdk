@@ -17,6 +17,17 @@ The **TRIA Playground** makes selected relational-governance behaviors visible t
 
 The local adapter is intentionally loopback-only and is not a production authorization service. Do not expose it directly to the public internet.
 
+## What exists today
+
+**TRIA is experimental alpha software under active development.** The open-source SDK and public evaluation surfaces are available today for developers and researchers to explore, test, and integrate. A production hosted implementation is not yet generally available.
+
+- **Open-source SDK** — model-independent relational governance primitives under the Mozilla Public License Version 2.0 (MPL-2.0).
+- **Public Playground** — a live browser-based demonstration of consent and revocation, contested reality, and agentic action, with an applied Before TRIA / With TRIA comparison.
+- **SDK-backed local mode** — the Playground can execute the canonical Python SDK locally through a narrow loopback adapter.
+- **Developer path** — a Quickstart and complete no-network governed application provide concrete paths from evaluation to integration.
+- **Verification** — automated tests exercise the encoded alpha behavior, including regression coverage around governance and Playground boundaries.
+- **Hosted deployment contract** — security, privacy, abuse-resistance, and operational gates are documented for any future public SDK-backed service.
+
 ## Build something real
 
 Start with the [Quickstart](docs/quickstart.md) and the [complete no-network governed assistant](docs/complete-governed-application.md). It creates two participants, grants both consent and permission, executes once, revokes each independently, proves subsequent attempts are blocked, and reopens its SQLite history. No research-paper reading or provider credentials are needed.
