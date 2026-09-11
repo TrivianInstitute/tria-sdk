@@ -1,10 +1,16 @@
-# TRIA Playground v0.2
+# TRIA Playground
 
 **See what changes when relationship becomes part of the architecture.**
 
-The Playground now has two deliberately distinct modes: the dependency-free browser visualization in `index.html`, and a narrow local HTTP adapter in `adapter.py` that executes the same scenarios through the canonical TRIA Python SDK.
+The Playground has two deliberately distinct execution modes: the dependency-free browser visualization in `index.html`, and a narrow local HTTP adapter in `adapter.py` that executes the core scenarios through the canonical TRIA Python SDK.
 
-## Scenarios
+## Start with the applied comparison
+
+[`before-with-tria.html`](before-with-tria.html) presents a plain-language **Before TRIA / With TRIA** comparison. It follows a familiar AI-assistant case: a scheduling preference was stored, persistent-context consent is later revoked, and the agent subsequently attempts to use the historical preference.
+
+The comparison is deliberately illustrative and does not claim that every non-TRIA system behaves identically. It exists to make the architectural distinction legible before a visitor explores the lower-level scenarios.
+
+## Core scenarios
 
 1. **Consent & Revocation** — inspect how current consent and READ permission affect a proposed use of relational context.
 2. **Contested Reality** — preserve an observation, an interpretation derived from it, and a participant dispute without silently collapsing them into one fact.
@@ -21,19 +27,7 @@ python playground/adapter.py
 
 Then open `http://127.0.0.1:8765/`.
 
-The adapter exposes:
-
-- `GET /` — the Playground interface
-- `GET /healthz` — a minimal health response
-- `POST /api/scenario` — an allowlisted scenario request
-
-Example request:
-
-```json
-{"scenario":"action","revoke":"permission"}
-```
-
-The server binds to loopback by default and requires JSON for scenario requests.
+The adapter exposes `GET /`, `GET /healthz`, and the allowlisted `POST /api/scenario` endpoint. The server binds to loopback by default and requires JSON for scenario requests.
 
 ## Trust boundary
 
@@ -43,17 +37,13 @@ The browser never receives `Relationship`, `rel.admin`, stores, provider credent
 
 This is a demonstration adapter, not host authentication, a production authorization service, security certification, empirical validation, or a claim of complete SDK conformance. The canonical executable behavior remains the Python package and its tests.
 
-## Static mode
+## Public and static mode
 
-`index.html` remains usable without the adapter as an educational deterministic visualization. The next UI integration step is to have the browser detect the local adapter and render SDK-produced results when available, while clearly labeling illustrative fallback mode.
-
-## Publishing
-
-The static interface is suitable for static hosting after review. The Python adapter is not a GitHub Pages backend and should not be exposed directly to the public internet in its local-demo form. A public hosted Playground requires a deployment-specific service boundary, abuse controls, and operational review.
+The GitHub Pages surface is an educational deterministic visualization. When the local adapter is available, the main UI detects it and labels SDK-produced results separately. A public SDK-backed service requires the independent deployment boundary described in [`../docs/hosted-playground.md`](../docs/hosted-playground.md).
 
 ## Commercial boundary
 
-This public Playground demonstrates what selected TRIA relational primitives mean. It is not intended to become the enterprise deployment console. Fleet observability, organizational policy management, managed integrations, enterprise analytics, and proprietary augmentation can remain separate Trivian Technologies product surfaces.
+This public Playground demonstrates what selected TRIA relational primitives mean. It is not the enterprise deployment console. Fleet observability, organizational policy management, managed integrations, enterprise analytics, and proprietary augmentation are separate product and trust surfaces.
 
 ## License
 
