@@ -8,9 +8,12 @@ It treats consequential relational state as explicit, attributable, contestable,
 
 The **TRIA Playground** makes selected relational-governance behaviors visible through three scenarios: Consent & Revocation, Contested Reality, and Agentic Action.
 
-- **Public Playground:** after GitHub Pages is enabled for this repository, the static public surface will be available at `https://trivianinstitute.github.io/tria-sdk/`. This mode is explicitly illustrative and does not claim to execute the Python SDK.
+**[Launch the public TRIA Playground](https://trivianinstitute.github.io/tria-sdk/)**
+
+- **Public Playground:** the live GitHub Pages experience is an explicitly illustrative browser demonstration. It does not claim to execute the Python SDK.
 - **SDK-backed Playground:** clone the repository and run `python playground/adapter.py`, then open `http://127.0.0.1:8765/`. In this mode, evaluation results come from the canonical TRIA Python SDK through the narrow local adapter.
 - **Source and trust boundary:** see [`playground/README.md`](playground/README.md).
+- **Hosted deployment gates:** see [`docs/hosted-playground.md`](docs/hosted-playground.md) for the requirements governing any future public SDK-backed service.
 
 The local adapter is intentionally loopback-only and is not a production authorization service. Do not expose it directly to the public internet.
 
