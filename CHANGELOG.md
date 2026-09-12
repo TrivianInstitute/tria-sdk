@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Evaluation and adoption
+- Add a five-step SDK-backed scheduling reference with synthetic JSON reports, code fingerprints, inspectable outcomes and SQLite reopen checks.
+- Add an evidence page and independent developer reproduction protocol/report template.
+- Make local Playground evaluation honor selected consent, permission and dispute state; preserve actual governance outcomes and distinguish claim status from execution decisions.
+- Keep SDK request failures visible, clear stale displays, and serve an explicit allowlist of local navigation pages.
+- Core SDK governance, event schema and diagnostic semantics are unchanged. Independent validation and a hosted SDK service remain separate work.
+
 ## [0.1.0a5] - 2026-09-10
 
 ### Added
