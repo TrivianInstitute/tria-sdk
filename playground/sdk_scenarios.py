@@ -36,7 +36,7 @@ def _events(rel):
     ]
 
 
-def consent_and_revocation(revoke: str = "consent") -> dict:
+def consent_and_revocation(revoke: str = "consent", *, state: dict | None = None) -> dict:
     rel = Tria().create_relationship(["human:user", "agent:assistant"])
     claim = rel.register_claim(
         "human:user",
@@ -70,11 +70,12 @@ def consent_and_revocation(revoke: str = "consent") -> dict:
     before = bridge.execute(
         rel, request, OpenAIResponsesAdapter(), executor, model="playground-local"
     )
-    if revoke == "permission":
+    desired = state if state is not None else {"consent": revoke != "consent", "permission": revoke != "permission"}
+    if not desired["permission"]:
         rel.admin.revoke_permission(
             "human:user", "agent:assistant", resource, Capability.READ
         )
-    else:
+    if not desired["consent"]:
         rel.revoke_consent("human:user", "persistent_context")
 
     after_request = InvocationRequest(
@@ -94,15 +95,15 @@ def consent_and_revocation(revoke: str = "consent") -> dict:
     )
     return {
         "scenario": "consent",
-        "before": {"executed": before.executed, "reason": before.plan.reason},
-        "after": {"executed": after.executed, "reason": after.plan.reason},
+        "before": {"executed": before.executed, "reason": before.plan.reason, "outcome": before.plan.outcome.value},
+        "after": {"executed": after.executed, "reason": after.plan.reason, "outcome": after.plan.outcome.value},
         "revoked": revoke,
         "audit": rel.audit(),
         "events": _events(rel),
     }
 
 
-def contested_reality() -> dict:
+def contested_reality(*, dispute: bool = True) -> dict:
     rel = Tria().create_relationship(["human:user", "agent:assistant"])
     observation = rel.register_claim(
         "agent:assistant",
@@ -116,9 +117,10 @@ def contested_reality() -> dict:
         "Participant may be disengaged.",
         derived_from=[observation.claim_id],
     )
-    rel.dispute_claim(
-        "human:user", interpretation.claim_id, "I was concentrating."
-    )
+    if dispute:
+        rel.dispute_claim(
+            "human:user", interpretation.claim_id, "I was concentrating."
+        )
     state = rel.state
     return {
         "scenario": "reality",
@@ -130,7 +132,7 @@ def contested_reality() -> dict:
     }
 
 
-def agentic_action(revoke: str = "permission") -> dict:
+def agentic_action(revoke: str = "permission", *, state: dict | None = None) -> dict:
     rel = Tria().create_relationship(["human:user", "agent:assistant"])
     resource = "action:calendar:schedule"
     rel.grant_consent("human:user", "agent_action", purpose="scheduling")
@@ -161,17 +163,18 @@ def agentic_action(revoke: str = "permission") -> dict:
         )
 
     before = attempt("Schedule a meeting.")
-    if revoke == "consent":
+    desired = state if state is not None else {"consent": revoke != "consent", "permission": revoke != "permission"}
+    if not desired["consent"]:
         rel.revoke_consent("human:user", "agent_action")
-    else:
+    if not desired["permission"]:
         rel.admin.revoke_permission(
             "human:user", "agent:assistant", resource, Capability.ACT
         )
     after = attempt("Schedule a meeting after revocation.")
     return {
         "scenario": "action",
-        "before": {"executed": before.executed, "reason": before.plan.reason},
-        "after": {"executed": after.executed, "reason": after.plan.reason},
+        "before": {"executed": before.executed, "reason": before.plan.reason, "outcome": before.plan.outcome.value},
+        "after": {"executed": after.executed, "reason": after.plan.reason, "outcome": after.plan.outcome.value},
         "executor_calls": len(calls),
         "revoked": revoke,
         "audit": rel.audit(),

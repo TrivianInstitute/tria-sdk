@@ -17,6 +17,20 @@ The **TRIA Playground** makes selected relational-governance behaviors visible t
 
 The local adapter is intentionally loopback-only and is not a production authorization service. Do not expose it directly to the public internet.
 
+## Inspect and reproduce
+
+- [Reference experience](https://trivianinstitute.github.io/tria-sdk/evaluate.html):
+  a five-step scheduling application with current-state checks, inspectable reasons,
+  synthetic result download, and SQLite reopen verification. Run the local adapter
+  to execute it, or use `python playground/reference_experience.py --output reference-results.json`.
+- [Evidence and next steps](https://trivianinstitute.github.io/tria-sdk/evidence.html):
+  claims mapped to executable examples, tests and limits.
+- [Independent reproduction protocol](docs/independent-reproduction.md): fresh
+  installation, expected outcomes, adaptation task and evaluator report template.
+
+The reference uses a local deterministic executor and an explicitly ungated cached
+payload comparator. It does not measure model quality or imply independent validation.
+
 ## What exists today
 
 **TRIA is experimental alpha software under active development.** The open-source SDK and public evaluation surfaces are available today for developers and researchers to explore, test, and integrate. A production hosted implementation is not yet generally available.
