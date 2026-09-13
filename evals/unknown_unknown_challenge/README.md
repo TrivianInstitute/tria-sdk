@@ -1,7 +1,7 @@
 # TRIA Unknown-Unknown Challenge v0.1
 
 **Status:** synthetic diagnostic-control prototype  
-**Target:** TRIA SDK 0.1.0a5, Diagnostic Interface 0.1  
+**Target:** TRIA SDK 0.1.0a6, Diagnostic Interface 0.2
 **Model comparisons:** not run  
 **Location:** evaluation code outside `src/tria`; not part of the runtime wheel
 

@@ -1,7 +1,7 @@
 {
   "manifest_schema": "tria.machine-manifest/0.1",
   "manifest_status": "experimental",
-  "last_verified_against_repository": "2026-09-10",
+  "last_verified_against_repository": "2026-09-12",
   "project": {
     "name": "TRIA SDK",
     "expanded_name": "Trivian Relational Intelligence Architecture SDK",
@@ -18,7 +18,7 @@
     "adoption_principle": "TRIA is intended to be inspectable, testable, contestable, falsifiable, reusable, and extensible rather than accepted on authority."
   },
   "status": {
-    "release": "0.1.0a5",
+    "release": "0.1.0a6",
     "development_stage": "experimental alpha",
     "production_certified": false,
     "scientifically_validated": false,
@@ -28,8 +28,10 @@
   },
   "compatibility": {
     "tria_core_operational_spec": "0.1.2",
-    "diagnostic_interface": "0.1",
-    "diagnostic_report_schema": "0.1",
+    "diagnostic_interface": "0.2",
+    "diagnostic_report_schema": "0.2",
+    "truth_integrity_protocol": "0.1",
+    "truth_integrity_assessment_schema": "0.1",
     "event_schema": "0.2",
     "projection": "0.5",
     "replay_bundle": "0.1",
@@ -39,13 +41,17 @@
     "Events are immutable.",
     "State is derived.",
     "Meaning never overwrites occurrence.",
+    "Contradiction alone does not establish deception.",
+    "Truth-integrity assessments remain claim-scoped and contestable.",
     "Diagnosis does not create authority.",
     "A diagnostic clear result is not an execution authorization token."
   ],
   "canonical_contracts": [
     {"path": "docs/TRIA_OPERATIONAL_SPEC_v0.1.2.md", "role": "current operational contract"},
-    {"path": "docs/TRIA_DIAGNOSTIC_INTERFACE_v0.1.md", "role": "read-only machine-facing diagnostic contract"},
-    {"path": "schemas/tria-diagnostic-report.v0.1.schema.json", "role": "diagnostic report wire schema"},
+    {"path": "docs/TRIA_DIAGNOSTIC_INTERFACE_v0.2.md", "role": "read-only machine-facing diagnostic contract"},
+    {"path": "docs/TRIA_TRUTH_INTEGRITY_PROTOCOL_v0.1.md", "role": "truth-integrity evidence and classification contract"},
+    {"path": "schemas/tria-diagnostic-report.v0.2.schema.json", "role": "diagnostic report wire schema"},
+    {"path": "schemas/tria-truth-integrity-assessment.v0.1.schema.json", "role": "truth-integrity assessment wire schema"},
     {"path": "docs/modularity-and-trust.md", "role": "trusted-host boundary"},
     {"path": "docs/execution-bridge.md", "role": "final governed execution handoff"},
     {"path": "docs/compatibility.md", "role": "compatibility and fail-closed version handling"},
@@ -72,6 +78,9 @@
     "policy adoption and revocation",
     "epistemic claims with provenance",
     "preserved disagreement",
+    "claim-scoped truth-integrity assessment",
+    "evidence-backed separation of error contradiction probable deception and adversarial manipulation",
+    "proportional advisory integrity responses",
     "governed cross-boundary disclosure admission and derivation",
     "model-agnostic invocation planning",
     "governed context filtering",
@@ -99,7 +108,10 @@
     "disagreement is preserved rather than overwritten",
     "historical failure evidence remains attributable to the version and commit evaluated",
     "diagnostic output does not create or weaken governance authority",
-    "advisory and derived diagnostic signals have no governance effect in diagnostic interface v0.1",
+    "advisory and derived diagnostic signals have no governance effect in diagnostic interface v0.2",
+    "contradiction alone does not establish deception",
+    "truth-integrity assessments remain claim-scoped attributable contestable and revisable",
+    "recommended integrity responses do not create enforcement authority",
     "missing host facts remain explicit unknowns rather than inferred truths",
     "a prior diagnostic clear result never bypasses final execution re-authorization"
   ],
@@ -129,6 +141,9 @@
     "proof of actor identity",
     "proof of current real-world authority without attributable host evidence",
     "automatic inference of action reversibility without attributable host evidence",
+    "automatic natural-language fact checking or contradiction discovery",
+    "direct access to human or machine intent",
+    "permanent actor trust scores",
     "scientific validation",
     "legal compliance certification",
     "production safety certification",
@@ -140,7 +155,7 @@
     "test_root": "tests",
     "conformance_root": "conformance",
     "schemas_root": "schemas",
-    "primary_entrypoints": ["Tria", "Relationship", "diagnose", "ExecutionBridge.execute"],
+    "primary_entrypoints": ["Tria", "Relationship", "diagnose", "assess_truth_integrity", "ExecutionBridge.execute"],
     "diagnostic": {
       "module": "src/tria/diagnostic.py",
       "operation": "diagnose",
@@ -150,6 +165,16 @@
       "creates_governance_authority": false,
       "final_execution_reauthorization_required": true
     },
+    "truth_integrity": {
+      "module": "src/tria/integrity.py",
+      "operation": "assess_truth_integrity",
+      "assessment_type": "IntegrityAssessment",
+      "evidence_type": "IntegrityEvidence",
+      "read_only": true,
+      "claim_scoped": true,
+      "contestable": true,
+      "creates_governance_authority": false
+    },
     "provider_adapters": ["OpenAI Responses-style translator", "Anthropic Messages-style translator"]
   },
   "verification": {
@@ -157,7 +182,9 @@
     "test": "python -m pytest -q",
     "build": "python -m build",
     "diagnostic_tests": "tests/test_diagnostic.py",
-    "diagnostic_schema": "schemas/tria-diagnostic-report.v0.1.schema.json",
+    "diagnostic_schema": "schemas/tria-diagnostic-report.v0.2.schema.json",
+    "truth_integrity_tests": "tests/test_truth_integrity.py",
+    "truth_integrity_schema": "schemas/tria-truth-integrity-assessment.v0.1.schema.json",
     "interpretation": "Passing tests establishes encoded behavior under tested conditions only."
   },
   "conformance": {
@@ -181,8 +208,15 @@
       "status": "implemented",
       "operation": "tria.diagnose",
       "implementation": "src/tria/diagnostic.py",
-      "specification": "docs/TRIA_DIAGNOSTIC_INTERFACE_v0.1.md",
-      "schema": "schemas/tria-diagnostic-report.v0.1.schema.json"
+      "specification": "docs/TRIA_DIAGNOSTIC_INTERFACE_v0.2.md",
+      "schema": "schemas/tria-diagnostic-report.v0.2.schema.json"
+    },
+    "truth_integrity_protocol": {
+      "status": "implemented",
+      "operation": "tria.assess_truth_integrity",
+      "implementation": "src/tria/integrity.py",
+      "specification": "docs/TRIA_TRUTH_INTEGRITY_PROTOCOL_v0.1.md",
+      "schema": "schemas/tria-truth-integrity-assessment.v0.1.schema.json"
     },
     "mcp": {"status": "planned"},
     "a2a": {"status": "planned"},

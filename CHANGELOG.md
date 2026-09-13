@@ -7,7 +7,27 @@
 - Add an evidence page and independent developer reproduction protocol/report template.
 - Make local Playground evaluation honor selected consent, permission and dispute state; preserve actual governance outcomes and distinguish claim status from execution decisions.
 - Keep SDK request failures visible, clear stale displays, and serve an explicit allowlist of local navigation pages.
-- Core SDK governance, event schema and diagnostic semantics are unchanged. Independent validation and a hosted SDK service remain separate work.
+- Core SDK governance and event schema are unchanged. Independent validation and a hosted SDK service remain separate work.
+
+## [0.1.0a6] - 2026-09-12
+
+### Added
+- Add the public TRIA Truth-Integrity Protocol v0.1 and `assess_truth_integrity` reference operation.
+- Add provenance-bearing `IntegrityEvidence` for correction, contradiction, prior knowledge, fabricated provenance, material omission, and repeated-pattern evidence.
+- Distinguish `ERROR`, `UNCERTAINTY`, `CONTRADICTION`, `PROBABLE_DECEPTION`, and `ADVERSARIAL_MANIPULATION` as claim-scoped conditions.
+- Add proportional advisory responses from `INQUIRE` and `REPAIR` through `HOLD`, `RESTRICT`, and `QUARANTINE`.
+- Add assessment and Diagnostic Interface v0.2 schemas, conformance cases, and executable falsifiers.
+
+### Changed
+- Extend `tria.diagnose` with optional claim-linked integrity evidence while preserving read-only behavior and final execution re-authorization.
+- Require contradiction plus additional attributable knowledge evidence before the reference classifier reports probable deception, except when fabricated provenance is directly evidenced.
+- Keep integrity findings contestable and non-authoritative; hosts or separately adopted policies remain responsible for enforcement, appeal, and repair.
+- Advance the package to `0.1.0a6` and the Diagnostic Interface to `0.2`; event schema `0.2`, projection `0.5`, replay bundle `0.1`, and operational specification `0.1.2` remain unchanged.
+
+### Evidence
+- Tests prove that contradiction alone does not become deception, correction remains distinguishable from deception, unknown claim references fail closed, and repeated probable-deception evidence can produce an adversarial-manipulation classification.
+- Tests prove that assessments and diagnostic integration are read-only, schema-valid, attributable, contestable, and non-authoritative.
+- Passing tests establish encoded behavior only; they do not establish source authenticity, intent, real-world deception-detection accuracy, legal compliance, or production safety.
 
 ## [0.1.0a5] - 2026-09-10
 

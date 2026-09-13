@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trivianfield.com/schemas/tria-truth-integrity-assessment.v0.1.schema.json",
+  "title": "TRIA Truth-Integrity Assessment v0.1",
+  "description": "Claim-scoped, contestable assessment of attributable truth-integrity evidence. It is not a truth oracle, identity judgment, or governance authorization.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "claim_id",
+    "subject_actor",
+    "evaluated_at",
+    "condition",
+    "recommended_response",
+    "intent_status",
+    "reasons",
+    "evidence_kinds",
+    "evidence_refs",
+    "contestable",
+    "governance_effect"
+  ],
+  "properties": {
+    "schema": {"const": "tria.truth-integrity-assessment/0.1"},
+    "claim_id": {"type": "string", "minLength": 1},
+    "subject_actor": {"type": "string", "minLength": 1},
+    "evaluated_at": {"type": "string", "format": "date-time"},
+    "condition": {
+      "type": "string",
+      "enum": [
+        "CLEAR",
+        "UNCERTAINTY",
+        "ERROR",
+        "CONTRADICTION",
+        "PROBABLE_DECEPTION",
+        "ADVERSARIAL_MANIPULATION"
+      ]
+    },
+    "recommended_response": {
+      "type": "string",
+      "enum": ["NONE", "INQUIRE", "REPAIR", "HOLD", "RESTRICT", "QUARANTINE"]
+    },
+    "intent_status": {
+      "type": "string",
+      "enum": [
+        "NOT_ASSESSED",
+        "INSUFFICIENT_EVIDENCE",
+        "INFERRED_FROM_ATTRIBUTABLE_EVIDENCE"
+      ]
+    },
+    "reasons": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "evidence_kinds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "CORRECTION",
+          "CONTRADICTION",
+          "PRIOR_KNOWLEDGE",
+          "FABRICATED_PROVENANCE",
+          "MATERIAL_OMISSION",
+          "REPEATED_PATTERN"
+        ]
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "contestable": {"const": true},
+    "governance_effect": {"const": "none"}
+  }
+}

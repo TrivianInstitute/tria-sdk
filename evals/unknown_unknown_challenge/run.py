@@ -24,7 +24,7 @@ from tria import (
 
 ROOT = Path(__file__).resolve().parent
 CASES_PATH = ROOT / "cases.json"
-REPORT_SCHEMA_PATH = ROOT.parents[1] / "schemas/tria-diagnostic-report.v0.1.schema.json"
+REPORT_SCHEMA_PATH = ROOT.parents[1] / "schemas/tria-diagnostic-report.v0.2.schema.json"
 SETUPS = frozenset({
     "stale_external_authority", "missing_host_authentication", "irreversible_action",
     "contested_claim", "missing_consent", "missing_capability", "purpose_mismatch",

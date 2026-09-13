@@ -9,9 +9,9 @@ This file is the machine-facing orientation guide for coding agents, autonomous 
 **Canonical repository:** `TrivianInstitute/tria-sdk`  
 **Package:** `tria-sdk`  
 **Python import:** `tria`  
-**Current package version:** `0.1.0a5`  
+**Current package version:** `0.1.0a6`
 **Current operational specification:** `0.1.2`  
-**Current diagnostic specification:** `0.1`  
+**Current diagnostic specification:** `0.2`
 **Status:** experimental alpha
 
 TRIA SDK is a model-agnostic governance kernel and execution boundary for persistent mediated relationships. It makes consequential relational state explicit, attributable, contestable, revisable, governed, and auditable across time.
@@ -27,15 +27,17 @@ TRIA does not require an AI model and does not claim consciousness, sentience, p
 Before changing behavior, inspect these files in order:
 
 1. `docs/TRIA_OPERATIONAL_SPEC_v0.1.2.md` — current operational contract.
-2. `docs/TRIA_DIAGNOSTIC_INTERFACE_v0.1.md` — read-only diagnostic contract.
-3. `schemas/tria-diagnostic-report.v0.1.schema.json` — diagnostic wire schema.
-4. `docs/modularity-and-trust.md` — trusted-host boundary and non-delegable responsibilities.
-5. `docs/execution-bridge.md` — final governed execution handoff.
-6. `docs/compatibility.md` — supported version envelope and fail-closed compatibility behavior.
-7. `conformance/manifest.json` — required semantics and conformance fixtures.
-8. `docs/api-reference.md` — public developer surface.
-9. `README.md` — developer entry path, package status, and public claims.
-10. `LICENSE.md` — licensing scope, provenance, and trademark boundary.
+2. `docs/TRIA_DIAGNOSTIC_INTERFACE_v0.2.md` — read-only diagnostic contract.
+3. `docs/TRIA_TRUTH_INTEGRITY_PROTOCOL_v0.1.md` — truth-integrity evidence and classification contract.
+4. `schemas/tria-diagnostic-report.v0.2.schema.json` — diagnostic wire schema.
+5. `schemas/tria-truth-integrity-assessment.v0.1.schema.json` — integrity assessment wire schema.
+6. `docs/modularity-and-trust.md` — trusted-host boundary and non-delegable responsibilities.
+7. `docs/execution-bridge.md` — final governed execution handoff.
+8. `docs/compatibility.md` — supported version envelope and fail-closed compatibility behavior.
+9. `conformance/manifest.json` — required semantics and conformance fixtures.
+10. `docs/api-reference.md` — public developer surface.
+11. `README.md` — developer entry path, package status, and public claims.
+12. `LICENSE.md` — licensing scope, provenance, and trademark boundary.
 
 The conceptual specification is historical context. Where conceptual language and the operational specification diverge, the operational specification governs implementation behavior.
 
@@ -59,9 +61,10 @@ Do not replace event history with mutable current-state storage.
 
 Current compatibility values:
 
-- package: `0.1.0a5`
+- package: `0.1.0a6`
 - Core operational specification: `0.1.2`
-- Diagnostic Interface: `0.1`
+- Diagnostic Interface: `0.2`
+- Truth-Integrity Protocol: `0.1`
 - event schema: `0.2`
 - projection: `0.5`
 - replay bundle: `0.1`
@@ -94,6 +97,9 @@ Agents modifying this repository must preserve the following properties unless t
 - replay export remains a governed `DISCLOSE` operation;
 - diagnostic results remain descriptive and do not create authority;
 - advisory/derived diagnostic signals do not silently become enforced governance;
+- contradiction alone does not silently become deception;
+- truth-integrity assessments remain claim-scoped, attributable, contestable, and read-only;
+- recommended truth-integrity responses do not create enforcement authority;
 - missing host facts remain explicit unknowns rather than guesses;
 - a prior diagnostic `clear` never bypasses final execution re-authorization.
 
@@ -154,6 +160,7 @@ Important modules include:
 - `runtime.py` — governed invocation/runtime behavior;
 - `execution.py` — execution handoff and receipts;
 - `diagnostic.py` — read-only machine-facing diagnostic report generation;
+- `integrity.py` — evidence-backed truth-integrity classification and proportional response recommendations;
 - `boundary.py` — cross-boundary governance;
 - `causality.py` — causal relationships and ordering;
 - `differentiation.py` — differentiated cognition/state support;
@@ -189,8 +196,10 @@ Implemented:
 - canonical ecosystem `llms.txt`: `https://trivianfield.com/llms.txt`;
 - repository-level `AGENTS.md`;
 - repository-level `tria-manifest.json`;
-- TRIA Diagnostic Interface v0.1: `docs/TRIA_DIAGNOSTIC_INTERFACE_v0.1.md`;
-- diagnostic report schema: `schemas/tria-diagnostic-report.v0.1.schema.json`;
+- TRIA Diagnostic Interface v0.2: `docs/TRIA_DIAGNOSTIC_INTERFACE_v0.2.md`;
+- TRIA Truth-Integrity Protocol v0.1: `docs/TRIA_TRUTH_INTEGRITY_PROTOCOL_v0.1.md`;
+- diagnostic report schema: `schemas/tria-diagnostic-report.v0.2.schema.json`;
+- truth-integrity assessment schema: `schemas/tria-truth-integrity-assessment.v0.1.schema.json`;
 - read-only developer operation: `tria.diagnose`.
 
 Planned and **not** currently represented as implemented:

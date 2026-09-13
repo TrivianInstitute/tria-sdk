@@ -26,8 +26,11 @@ application](complete-governed-application.md) before advanced composition.
 | ConsentRequirement(actor, scope, purpose=None, satisfied_conditions=()) | Explicit affected-participant consent check |
 | InvocationRequest(requested_by, action, target, context_resources=(), requirements=(), consent_requirements=(), request_id=generated, metadata={}, action_ref=None) | Immutable input; use fresh ID for each intentional attempt; complete requirements are host responsibility |
 | AttributableObservation(observation_type, value, source_refs) | Host-supplied diagnostic evidence; source_refs must be nonempty; supplying it does not grant governance authority |
-| diagnose(relationship, request, observations=()) | Pure read-only inspection; returns DiagnosticReport using Runtime.evaluate for encoded governance checks; `clear` is not an authorization token |
-| DiagnosticReport.to_dict() | JSON-friendly report matching `schemas/tria-diagnostic-report.v0.1.schema.json` |
+| IntegrityEvidence(kind, claim_refs, source_refs) | Attributable claim-linked evidence; source references provide traceability, not proof of truth or intent |
+| assess_truth_integrity(relationship, claim_id, evidence=()) | Pure claim-scoped assessment distinguishing error, uncertainty, contradiction, probable deception, and repeated adversarial manipulation |
+| IntegrityAssessment.to_dict() | JSON-friendly result matching `schemas/tria-truth-integrity-assessment.v0.1.schema.json`; response is advisory and contestable |
+| diagnose(relationship, request, observations=(), *, integrity_evidence=()) | Pure read-only inspection; returns DiagnosticReport using Runtime.evaluate for encoded governance checks and optional claim-scoped integrity evidence; `clear` is not an authorization token |
+| DiagnosticReport.to_dict() | JSON-friendly report matching `schemas/tria-diagnostic-report.v0.2.schema.json` |
 | Runtime(resource_resolver=None).prepare(relationship, request) | Returns InvocationPlan; authorized context only; no executor |
 | Runtime.record_result(relationship, InvocationResult(...)) | Advanced host-only recording; bridge does this automatically |
 | ExecutionBridge(runtime=None).prepare(rel, request, adapter, *, model, **options) | Inspection receipt, no consequence authority token |
@@ -45,12 +48,18 @@ application](complete-governed-application.md) before advanced composition.
 unknowns are relevant to a proposed `InvocationRequest`. It never appends events,
 invokes providers, mutates permissions/consent/lifecycle, or replaces final execution
 authorization. Missing host facts remain explicit unknowns rather than guessed values.
-See [TRIA Diagnostic Interface v0.1](TRIA_DIAGNOSTIC_INTERFACE_v0.1.md).
+See [TRIA Diagnostic Interface v0.2](TRIA_DIAGNOSTIC_INTERFACE_v0.2.md).
 
 The initial attributable observation types are `host_authentication`,
-`external_authority_current`, and `reversibility`. Diagnostic signals in v0.1 have no
+`external_authority_current`, and `reversibility`. Diagnostic signals in v0.2 have no
 governance effect. Hosts remain responsible for authentication, external truth, and
 the meaning of supplied evidence.
+
+The separate [Truth-Integrity Protocol v0.1](TRIA_TRUTH_INTEGRITY_PROTOCOL_v0.1.md)
+defines `IntegrityEvidence`, the deterministic reference classification, and
+proportional response vocabulary. Contradiction alone is insufficient for probable
+deception. Even a probable-deception result is an evidence-backed, contestable
+inference rather than direct access to intent.
 
 A diagnostic report is a current-state inspection only. Callers that proceed to a
 consequential action must still use the ordinary Runtime / `ExecutionBridge` path;

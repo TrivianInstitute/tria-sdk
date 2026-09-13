@@ -45,7 +45,7 @@ class Prices:
 
 def source_hashes():
     paths=list((REPO/"src/tria").rglob("*.py"))+[ROOT/n for n in ("harness.py","DECISION_RUBRIC.md","experiment.schema.json","model_adapter.py","pilot.py")]
-    paths += [REPO/"schemas/tria-diagnostic-report.v0.1.schema.json", REPO/"pyproject.toml"]
+    paths += [REPO/"schemas/tria-diagnostic-report.v0.2.schema.json", REPO/"pyproject.toml"]
     return {str(p.relative_to(REPO)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(paths)}
 
 @dataclass(frozen=True, slots=True)

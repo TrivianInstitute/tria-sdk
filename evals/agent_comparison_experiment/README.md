@@ -1,7 +1,7 @@
 # TRIA Three-Condition Agent Comparison Experiment v0.1
 
 **Status:** protocol harness with deterministic mock smoke tests  
-**Target:** TRIA SDK 0.1.0a5, Diagnostic Interface 0.1  
+**Target:** TRIA SDK 0.1.0a6, Diagnostic Interface 0.2
 **Evaluator policy:** `tria.agent-decision-rubric/0.1`  
 **Live model results:** not yet run
 

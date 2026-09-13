@@ -13,7 +13,7 @@
       "required": ["tria_sdk", "diagnostic_spec"],
       "properties": {
         "tria_sdk": {"type": "string", "minLength": 1},
-        "diagnostic_spec": {"const": "0.1"}
+        "diagnostic_spec": {"const": "0.2"}
       }
     },
     "model_comparison_status": {"const": "not_run"},

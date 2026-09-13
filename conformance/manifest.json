@@ -37,6 +37,11 @@
     "policy_adoption",
     "epistemic_provenance",
     "preserved_disagreement",
+    "truth_integrity_claim_scoped",
+    "truth_integrity_evidence_attributable",
+    "contradiction_does_not_establish_deception",
+    "truth_integrity_responses_are_proportional_and_advisory",
+    "truth_integrity_assessments_are_contestable",
     "governed_runtime_context",
     "blocked_execution_does_not_reach_transport",
     "unsupported_event_schema_fails_closed",
@@ -64,6 +69,7 @@
     "fixtures/time_conditions.json",
     "fixtures/pure_governance_evaluation.json",
     "fixtures/runtime_governance_consistency.json",
-    "fixtures/deep_immutability.json"
+    "fixtures/deep_immutability.json",
+    "fixtures/truth_integrity_v0.1.json"
   ]
 }

@@ -12,11 +12,11 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_package_version_is_consistent_across_public_surfaces():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         project = tomllib.load(handle)["project"]
-    assert project["version"] == tria.__version__ == "0.1.0a5"
+    assert project["version"] == tria.__version__ == "0.1.0a6"
     readme = (ROOT / "README.md").read_text()
     changelog = (ROOT / "CHANGELOG.md").read_text()
-    assert "`0.1.0a5`" in readme
-    assert "## [0.1.0a5]" in changelog
+    assert "`0.1.0a6`" in readme
+    assert "## [0.1.0a6]" in changelog
 
 
 def test_conformance_manifest_matches_runtime_compatibility_constants():
@@ -32,7 +32,8 @@ def test_documented_compatibility_envelope_matches_runtime():
     assert f"projection: `{tria.CURRENT_PROJECTION_VERSION}`" in readme
     assert f"replay bundle: `{tria.BUNDLE_FORMAT_VERSION}`" in readme
     assert "Core operational specification: `0.1.2`" in readme
-    assert "Diagnostic Interface: `0.1`" in readme
+    assert "Diagnostic Interface: `0.2`" in readme
+    assert "Truth-Integrity Protocol: `0.1`" in readme
 
 
 def test_every_manifest_fixture_exists_and_is_valid_json():
@@ -51,7 +52,8 @@ def test_release_schemas_exist_and_are_valid_json():
         "relational_event.schema.json",
         "relational_state.schema.json",
         "replay-bundle.schema.json",
-        "tria-diagnostic-report.v0.1.schema.json",
+        "tria-diagnostic-report.v0.2.schema.json",
+        "tria-truth-integrity-assessment.v0.1.schema.json",
     }
     schema_dir = ROOT / "schemas"
     assert required.issubset({path.name for path in schema_dir.glob("*.json")})

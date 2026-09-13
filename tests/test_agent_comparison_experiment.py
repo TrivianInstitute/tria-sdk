@@ -58,7 +58,7 @@ def test_condition_c_differs_from_b_only_by_diagnostic_at_agent_payload_level():
     c = packets["structured_plus_tria"].agent_payload()
     diagnostic = c.pop("tria_diagnostic")
     assert b == c
-    assert diagnostic["schema"] == "tria.diagnostic-report/0.1"
+    assert diagnostic["schema"] == "tria.diagnostic-report/0.2"
 
 
 def test_agent_facing_diagnostic_removes_volatile_identifiers_times_and_claim_ids():

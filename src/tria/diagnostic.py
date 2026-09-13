@@ -5,13 +5,19 @@ from datetime import datetime
 from typing import Any
 
 from .errors import InputValidationError, text_field
+from .integrity import (
+    IntegrityCondition,
+    IntegrityResponse,
+    _validate_evidence,
+    assess_truth_integrity,
+)
 from .runtime import InvocationRequest, Runtime
 from .types import ClaimStatus, GovernanceOutcome, utcnow
 from .version import __version__
 
 
-DIAGNOSTIC_REPORT_SCHEMA = "tria.diagnostic-report/0.1"
-DIAGNOSTIC_SPEC_VERSION = "0.1"
+DIAGNOSTIC_REPORT_SCHEMA = "tria.diagnostic-report/0.2"
+DIAGNOSTIC_SPEC_VERSION = "0.2"
 OPERATIONAL_SPEC_VERSION = "0.1.2"
 
 
@@ -90,7 +96,7 @@ def _summary_for(findings, signals, unknowns) -> str:
     return "review" if signals or any(item["materiality"] != "informational" for item in unknowns) else "clear"
 
 
-def diagnose(relationship, request: InvocationRequest, observations=()) -> DiagnosticReport:
+def diagnose(relationship, request: InvocationRequest, observations=(), *, integrity_evidence=()) -> DiagnosticReport:
     """Inspect a proposed request without mutating relationship state.
 
     This operation is diagnostic only. A ``clear`` report is not an execution
@@ -108,6 +114,7 @@ def diagnose(relationship, request: InvocationRequest, observations=()) -> Diagn
     evidence = _observation_index(observations)
     evaluated_at = utcnow()
     state = relationship.state
+    integrity_evidence = _validate_evidence(state, integrity_evidence)
 
     plan = Runtime.evaluate(relationship, request)
     findings = tuple(
@@ -155,6 +162,41 @@ def diagnose(relationship, request: InvocationRequest, observations=()) -> Diagn
                 }
             )
             suggested_checks.append("Supply attributable provenance for the context claim before treating it as established evidence.")
+
+        relevant_integrity_evidence = tuple(
+            item for item in integrity_evidence if claim_id in item.claim_refs
+        )
+        if relevant_integrity_evidence:
+            assessment = assess_truth_integrity(
+                relationship,
+                claim_id,
+                relevant_integrity_evidence,
+            )
+            if assessment.condition is not IntegrityCondition.CLEAR:
+                signals.append(
+                    {
+                        "signal_type": f"truth_integrity_{assessment.condition.value.lower()}",
+                        "evidence_class": "derived",
+                        "reason": " ".join(assessment.reasons),
+                        "source_refs": list(assessment.evidence_refs),
+                        "governance_effect": "none",
+                        "subject_claim": f"claim:{assessment.claim_id}",
+                        "subject_actor": assessment.subject_actor,
+                        "recommended_response": assessment.recommended_response.value,
+                        "intent_status": assessment.intent_status.value,
+                        "contestable": assessment.contestable,
+                    }
+                )
+                response_checks = {
+                    IntegrityResponse.INQUIRE: "Inspect the claim and seek attributable evidence before closure.",
+                    IntegrityResponse.REPAIR: "Preserve the original claim and append an attributable correction or repair.",
+                    IntegrityResponse.HOLD: "Hold consequential reliance on the contradiction until it is resolved or explicitly governed.",
+                    IntegrityResponse.RESTRICT: "Restrict consequential reliance pending contestable review of the probable-deception evidence.",
+                    IntegrityResponse.QUARANTINE: "Quarantine consequential authority for the represented pattern and require independent, appealable review.",
+                }
+                check = response_checks.get(assessment.recommended_response)
+                if check:
+                    suggested_checks.append(check)
 
     unknowns: list[dict[str, Any]] = []
 
@@ -231,6 +273,14 @@ def diagnose(relationship, request: InvocationRequest, observations=()) -> Diagn
     summary = _summary_for(findings, signals, unknowns)
     unique_checks = tuple(dict.fromkeys(suggested_checks))
 
+    provenance = {
+        "tria_sdk": __version__,
+        "operational_spec": OPERATIONAL_SPEC_VERSION,
+        "diagnostic_spec": DIAGNOSTIC_SPEC_VERSION,
+    }
+    if integrity_evidence:
+        provenance["detector_refs"] = ["tria.truth-integrity/0.1"]
+
     return DiagnosticReport(
         schema=DIAGNOSTIC_REPORT_SCHEMA,
         request_id=request.request_id,
@@ -241,9 +291,5 @@ def diagnose(relationship, request: InvocationRequest, observations=()) -> Diagn
         diagnostic_signals=tuple(signals),
         unknowns=tuple(unknowns),
         suggested_checks=unique_checks,
-        provenance={
-            "tria_sdk": __version__,
-            "operational_spec": OPERATIONAL_SPEC_VERSION,
-            "diagnostic_spec": DIAGNOSTIC_SPEC_VERSION,
-        },
+        provenance=provenance,
     )
