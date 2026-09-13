@@ -31,4 +31,4 @@ jobs:
         run: python playground/reference_experience.py --output /tmp/tria-reference-results.json
       - run: python -m build
       - run: python -m pip install --force-reinstall dist/*.whl
-      - run: python -c "import tria; assert tria.__version__ == '0.1.0a5'"
+      - run: python -c "import tria; assert tria.__version__ == '0.1.0a6'"
