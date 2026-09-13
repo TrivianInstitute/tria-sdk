@@ -1,0 +1,36 @@
+{
+  "protocol": "tria.truth-integrity/0.1",
+  "description": "Reference classification cases. Evidence is assumed attributable and structurally valid; fixture passage does not authenticate or prove it true.",
+  "cases": [
+    {
+      "id": "correction-is-error",
+      "evidence_kinds": ["CORRECTION"],
+      "expected_condition": "ERROR",
+      "expected_response": "REPAIR"
+    },
+    {
+      "id": "contradiction-is-not-deception",
+      "evidence_kinds": ["CONTRADICTION"],
+      "expected_condition": "CONTRADICTION",
+      "expected_response": "HOLD"
+    },
+    {
+      "id": "knowledge-plus-contradiction",
+      "evidence_kinds": ["CONTRADICTION", "PRIOR_KNOWLEDGE"],
+      "expected_condition": "PROBABLE_DECEPTION",
+      "expected_response": "RESTRICT"
+    },
+    {
+      "id": "fabricated-provenance",
+      "evidence_kinds": ["FABRICATED_PROVENANCE"],
+      "expected_condition": "PROBABLE_DECEPTION",
+      "expected_response": "RESTRICT"
+    },
+    {
+      "id": "repeated-probable-deception",
+      "evidence_kinds": ["CONTRADICTION", "PRIOR_KNOWLEDGE", "REPEATED_PATTERN"],
+      "expected_condition": "ADVERSARIAL_MANIPULATION",
+      "expected_response": "QUARANTINE"
+    }
+  ]
+}

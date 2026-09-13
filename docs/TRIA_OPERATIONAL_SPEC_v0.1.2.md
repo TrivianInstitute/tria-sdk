@@ -1,10 +1,11 @@
 # TRIA operational specification 0.1.2
 
-This is the current operational contract for 0.1.0a5. The conceptual
+This is the current operational contract for 0.1.0a6. The conceptual
 TRIA_CORE_SPEC_v0.1.1.md remains the historical pre-implementation baseline;
 implementation behavior is governed by this specification and linked contracts.
-The read-only Diagnostic Interface v0.1 adds inspection capability without changing
-these governance semantics or creating new authority.
+The read-only Diagnostic Interface v0.2 and Truth-Integrity Protocol v0.1 add
+inspection capability without changing these governance semantics or creating new
+authority.
 
 A relationship must have one valid created root, nonempty unique participants,
 a valid hash chain and a supported event schema before Runtime authorizes.
@@ -24,7 +25,8 @@ A prior diagnostic report, including `clear`, never substitutes for this final c
 
 See [Execution boundary](execution-bridge.md), [Modularity and trust](modularity-and-trust.md),
 [Persistence](persistence.md), [Provider transport](provider-adapters.md),
-[Diagnostic Interface](TRIA_DIAGNOSTIC_INTERFACE_v0.1.md), and
+[Diagnostic Interface](TRIA_DIAGNOSTIC_INTERFACE_v0.2.md),
+[Truth-Integrity Protocol](TRIA_TRUTH_INTEGRITY_PROTOCOL_v0.1.md), and
 [Compatibility](compatibility.md) for enforceable limits and exact API responsibilities.
 Full replay export still requires DISCLOSE. DISSOLVING permits READ but not DISCLOSE;
 inspect local history, or return to ACTIVE under lifecycle authority before export.

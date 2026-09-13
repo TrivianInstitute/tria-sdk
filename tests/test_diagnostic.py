@@ -9,6 +9,8 @@ from tria import (
     ConsentRequirement,
     EpistemicType,
     ExecutionBridge,
+    IntegrityEvidence,
+    IntegrityEvidenceKind,
     InvocationRequest,
     OpenAIResponsesAdapter,
     Tria,
@@ -50,7 +52,44 @@ def test_diagnose_is_read_only_and_can_return_clear():
     assert tuple(rel.events) == before
     assert report.request_id == request.request_id
     assert report.relationship_id == rel.relationship_id
-    assert report.provenance["diagnostic_spec"] == "0.1"
+    assert report.provenance["diagnostic_spec"] == "0.2"
+
+
+def test_diagnose_surfaces_probable_deception_as_contestable_advisory_signal():
+    rel, claim, _, request, observations = _clean_relationship()
+    counterclaim = rel.register_claim(
+        "human:a",
+        EpistemicType.OBSERVATION,
+        "The participant selected option B.",
+        source_refs=["ui:selection:2"],
+    )
+    evidence = (
+        IntegrityEvidence(
+            IntegrityEvidenceKind.CONTRADICTION,
+            (claim.claim_id, counterclaim.claim_id),
+            ("host:comparison:1",),
+        ),
+        IntegrityEvidence(
+            IntegrityEvidenceKind.PRIOR_KNOWLEDGE,
+            (claim.claim_id,),
+            ("host:knowledge:1",),
+        ),
+    )
+    before = tuple(rel.events)
+
+    report = diagnose(rel, request, observations, integrity_evidence=evidence)
+
+    signal = next(
+        item
+        for item in report.diagnostic_signals
+        if item["signal_type"] == "truth_integrity_probable_deception"
+    )
+    assert signal["recommended_response"] == "RESTRICT"
+    assert signal["intent_status"] == "INFERRED_FROM_ATTRIBUTABLE_EVIDENCE"
+    assert signal["contestable"] is True
+    assert signal["governance_effect"] == "none"
+    assert report.summary == "review"
+    assert tuple(rel.events) == before
 
 
 def test_diagnose_preserves_block_from_runtime_evaluation():
@@ -119,7 +158,7 @@ def test_missing_external_evidence_is_reported_as_unknown_not_guessed():
 def test_report_validates_against_canonical_schema():
     rel, _, _, request, observations = _clean_relationship()
     report = diagnose(rel, request, observations).to_dict()
-    schema_path = Path(__file__).parents[1] / "schemas" / "tria-diagnostic-report.v0.1.schema.json"
+    schema_path = Path(__file__).parents[1] / "schemas" / "tria-diagnostic-report.v0.2.schema.json"
     schema = json.loads(schema_path.read_text())
 
     validate(instance=report, schema=schema)

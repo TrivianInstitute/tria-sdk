@@ -40,6 +40,7 @@ payload comparator. It does not measure model quality or imply independent valid
 - **SDK-backed local mode** — the Playground can execute the canonical Python SDK locally through a narrow loopback adapter.
 - **Developer path** — a Quickstart and complete no-network governed application provide concrete paths from evaluation to integration.
 - **Verification** — automated tests exercise the encoded alpha behavior, including regression coverage around governance and Playground boundaries.
+- **Truth-integrity protocol** — a claim-scoped, evidence-backed reference assessment distinguishes error, uncertainty, contradiction, probable deception, and repeated adversarial manipulation without treating the SDK as a truth oracle.
 - **Hosted deployment contract** — security, privacy, abuse-resistance, and operational gates are documented for any future public SDK-backed service.
 
 ## Build something real
@@ -91,6 +92,7 @@ The public API is intentionally small. Begin with the quickstart, then the compl
 - create and persist relationships
 - register observations, inferences, interpretations, and shared claims
 - preserve epistemic lineage and contest claims without silent overwrite
+- assess attributable truth-integrity evidence without promoting contradiction alone into an accusation of deception
 - grant, revoke, and independently evaluate consent and permissions
 - govern lifecycle transitions and policy adoption
 - produce deterministic audit/replay state
@@ -100,6 +102,20 @@ The public API is intentionally small. Begin with the quickstart, then the compl
 `ExecutionBridge` separates governance evaluation from provider execution. A host declares the resources, capabilities, consent, purpose, and other requirements that must be true for a proposed invocation. TRIA evaluates those requirements against current relationship state before the executor is called.
 
 See [Execution Bridge](docs/execution-bridge.md), [Runtime Boundary](docs/runtime-boundary.md), and [Pure Governance Evaluation](docs/pure-governance-evaluation.md).
+
+### Truth integrity
+
+`assess_truth_integrity` provides a deterministic public protocol for classifying
+represented evidence as error, uncertainty, contradiction, probable deception, or
+repeated adversarial manipulation. Results are claim-scoped, attributable,
+contestable, and read-only. Contradiction alone produces `HOLD`, not a deception
+finding. Probable deception requires additional attributable evidence such as prior
+knowledge or fabricated provenance.
+
+The protocol recommends proportional responses from inquiry and repair through
+restriction or quarantine, but it does not itself modify authority. Hosts or
+separately adopted policies remain responsible for enforcement and review. See the
+[Truth-Integrity Protocol v0.1](docs/TRIA_TRUTH_INTEGRITY_PROTOCOL_v0.1.md).
 
 ### Persistence and replay
 
@@ -113,16 +129,17 @@ Provider adapters translate a governed invocation into a provider-specific reque
 
 The current alpha compatibility envelope is:
 
-- package: `0.1.0a5`
+- package: `0.1.0a6`
 - event schema: `0.2`
 - projection: `0.5`
 - replay bundle: `0.1`
 - Core operational specification: `0.1.2`
-- Diagnostic Interface: `0.1`
+- Diagnostic Interface: `0.2`
+- Truth-Integrity Protocol: `0.1`
 
 ## Status
 
-`0.1.0a5` is experimental alpha software. Interfaces and semantics may change. Review the [release-readiness notes](docs/release-readiness.md), run the full test suite, and perform deployment-specific security review before consequential use.
+`0.1.0a6` is experimental alpha software. Interfaces and semantics may change. Review the [release-readiness notes](docs/release-readiness.md), run the full test suite, and perform deployment-specific security review before consequential use.
 
 ## License
 

@@ -29,6 +29,17 @@ from .core import (
     Tria,
 )
 from .diagnostic import AttributableObservation, DiagnosticReport, diagnose
+from .integrity import (
+    TRUTH_INTEGRITY_SCHEMA,
+    TRUTH_INTEGRITY_SPEC_VERSION,
+    IntegrityAssessment,
+    IntegrityCondition,
+    IntegrityEvidence,
+    IntegrityEvidenceKind,
+    IntegrityResponse,
+    IntentStatus,
+    assess_truth_integrity,
+)
 from .differentiation import (
     DifferentiationObservation,
     GenerativeCondition,
@@ -87,13 +98,13 @@ __all__ = [
     "CrossBoundaryGovernanceError", "CURRENT_BUNDLE_FORMAT_VERSION", "CURRENT_EVENT_SCHEMA_VERSION", "CURRENT_PROJECTION_VERSION",
     "DelegationError", "DiagnosticReport", "DifferentiationObservation", "DisclosureHandle", "EpistemicAdmissionError", "EpistemicType", "EventProposal", "EventStore",
     "ExecutionBridge", "ExecutionReceipt", "Executor", "GenerativeCondition", "GovernanceDecision", "GovernanceEngine", "GovernanceOutcome",
-    "InMemoryEventStore", "InvocationPlan", "InvocationRequest", "InvocationResult", "LifecycleAuthorityError",
+    "InMemoryEventStore", "IntegrityAssessment", "IntegrityCondition", "IntegrityEvidence", "IntegrityEvidenceKind", "IntegrityResponse", "IntentStatus", "InvocationPlan", "InvocationRequest", "InvocationResult", "LifecycleAuthorityError",
     "LifecycleAuthorityRecord", "LifecycleState", "LifecycleTransitionError", "OpenAIResponsesAdapter", "PermissionRecord",
     "Policy", "PolicyAdoption", "PolicyAdoptionRecord", "PolicyAuthorityError", "PolicyAuthorityRecord",
     "PolicyDefinitionRecord", "ProviderAdapter", "ProviderRequest", "ProviderResponse", "ProviderTranslationError",
     "ReconsentRequirement", "RelationalEvent", "RelationalState", "Relationship", "ReplayBundle", "ReplayExportError", "ReplayImportError",
-    "Runtime", "SQLiteEventStore", "SchemaCompatibilityError", "Tria", "__version__", "admit_disclosure",
-    "assess_generative_condition", "check_compatibility", "check_event_schema", "derive_from_disclosure", "diagnose", "disclose_reference", "export_replay_bundle",
+    "Runtime", "SQLiteEventStore", "SchemaCompatibilityError", "TRUTH_INTEGRITY_SCHEMA", "TRUTH_INTEGRITY_SPEC_VERSION", "Tria", "__version__", "admit_disclosure",
+    "assess_generative_condition", "assess_truth_integrity", "check_compatibility", "check_event_schema", "derive_from_disclosure", "diagnose", "disclose_reference", "export_replay_bundle",
     "import_replay_bundle", "projection_digest", "record_differentiation_observation", "replay_export_resource",
     "require_supported_compatibility", "require_supported_event_schema", "state_to_dict", "verify_event_chain", "verify_replay_bundle",
 ]

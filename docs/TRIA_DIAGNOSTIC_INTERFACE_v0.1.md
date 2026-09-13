@@ -1,3 +1,5 @@
+> Historical v0.1 contract. The current interface is [v0.2](TRIA_DIAGNOSTIC_INTERFACE_v0.2.md).
+
 # TRIA Diagnostic Interface v0.1
 
 **Status:** implemented machine-facing contract  
